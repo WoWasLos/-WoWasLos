@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>wowaslos</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+  <header>
+    <img src="logo.png" alt="wowaslos Logo" />
+    <h1>wowaslos</h1>
+  </header>
+
+  <main>
+    <section id="login-section">
+      <h2>Login</h2>
+      <input type="email" id="email" placeholder="E-Mail" />
+      <input type="password" id="password" placeholder="Passwort" />
+      <button onclick="login()">Login</button>
+
+      <h3>Noch kein Konto?</h3>
+      <input type="email" id="signup-email" placeholder="E-Mail" />
+      <input type="password" id="signup-password" placeholder="Passwort" />
+      <button onclick="signup()">Registrieren</button>
+    </section>
+
+    <section id="app" style="display:none;">
+      <div id="map"></div>
+
+      <h2>Veranstaltungen</h2>
+      <ul id="event-list"></ul>
+
+      <h3>Neue Veranstaltung hinzufügen</h3>
+      <input id="event-name" placeholder="Name der Veranstaltung" />
+      <input id="event-location" placeholder="Ort (lat,lng)" />
+      <input id="event-description" placeholder="Beschreibung" />
+      <button onclick="addEvent()">Hinzufügen</button>
+    </section>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
