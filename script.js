@@ -22,6 +22,9 @@ async function login() {
   } else {
     console.log('Login erfolgreich:', data);
     alert('Login erfolgreich!');
+    document.getElementById('login-section').style.display = 'none';
+document.getElementById('app').style.display = 'block';
+loadEvents(); // lade Veranstaltungen nach Login
   }
 }
 
