@@ -12,14 +12,16 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 async function login() {
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+  console.log('Login versucht mit:', email);
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
+    console.error('Login fehlgeschlagen:', error.message);
     alert('Login fehlgeschlagen: ' + error.message);
   } else {
-    document.getElementById('login-section').style.display = 'none';
-    document.getElementById('app').style.display = 'block';
-    loadEvents();
+    console.log('Login erfolgreich:', data);
+    alert('Login erfolgreich!');
   }
 }
 
