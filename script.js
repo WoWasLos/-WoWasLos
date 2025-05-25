@@ -1,4 +1,4 @@
-const supabaseUrl = 'https://bddofzmczzoiyausrdzb.supabase.co/';
+const supabaseUrl = 'https://bddofzmczzoiyausrdzb.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJkZG9mem1jenpvaXlhdXNyZHpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwMDQwMTIsImV4cCI6MjA2MzU4MDAxMn0.-MISfzyKIP3zUbJl5vOZDlUAGQXBqntbc9r_sG2zsJI';
 const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
