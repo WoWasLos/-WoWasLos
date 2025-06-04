@@ -18,6 +18,24 @@ header img {
   margin-right: 15px;
 }
 
+nav {
+  margin-left: auto;
+  display: flex;
+  gap: 10px;
+}
+
+nav button {
+  background: #333;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+nav button:hover {
+  background: #555;
+}
+
 main {
   padding: 20px;
 }
