@@ -2,139 +2,143 @@ const supabaseUrl = 'https://bddofzmczzoiyausrdzb.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJkZG9mem1jenpvaXlhdXNyZHpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwMDQwMTIsImV4cCI6MjA2MzU4MDAxMn0.-MISfzyKIP3zUbJl5vOZDlUAGQXBqntbc9r_sG2zsJI';
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-let map = L.map('map').setView([48.5, 9], 7); // Süddeutschland
+let map;
+let markers = [];
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '&copy; OpenStreetMap'
-}).addTo(map);
+const southGermanyBounds = L.latLngBounds(
+  L.latLng(46.5, 6.5),  // Südwest (z.B. Bodensee)
+  L.latLng(50.7, 14.0)  // Nordost (z.B. Dresden Grenze)
+);
 
-function showSection(section) {
-  document.getElementById('login-section').style.display = 'none';
-  document.getElementById('add-section').style.display = 'none';
-  document.getElementById('finder-section').style.display = 'none';
+window.onload = () => {
+  initMap();
+  setupEventListeners();
+  checkAuthState();
+};
 
-  if (section === 'login') {
-    document.getElementById('login-section').style.display = 'block';
-  } else if (section === 'add') {
-    supabase.auth.getSession().then(({ data }) => {
-      if (!data.session) {
-        alert("Bitte zuerst einloggen.");
-        showSection('login');
-      } else {
-        document.getElementById('add-section').style.display = 'block';
-      }
-    });
-  } else {
-    document.getElementById('finder-section').style.display = 'block';
+function initMap() {
+  map = L.map('map', {
+    maxBounds: southGermanyBounds,
+    maxBoundsViscosity: 1.0,
+    minZoom: 7,
+    maxZoom: 16,
+    zoomControl: true,
+  }).setView([48.7, 11.5], 8);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap'
+  }).addTo(map);
+}
+
+function clearMarkers() {
+  markers.forEach(m => map.removeLayer(m));
+  markers = [];
+}
+
+function setupEventListeners() {
+  document.getElementById('nav-login').addEventListener('click', () => {
+    showSection('login-section');
+  });
+
+  document.getElementById('nav-event-finder').addEventListener('click', () => {
+    showSection('event-finder-section');
     loadEvents();
-  }
-}
+  });
 
-async function login() {
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-
-  if (error) return alert('Login fehlgeschlagen: ' + error.message);
-
-  alert('Erfolgreich eingeloggt!');
-  showSection('finder');
-}
-
-async function signup() {
-  const email = document.getElementById('signup-email').value;
-  const password = document.getElementById('signup-password').value;
-  const { error } = await supabase.auth.signUp({ email, password });
-  if (error) alert('Registrierung fehlgeschlagen: ' + error.message);
-  else alert('Registrierung erfolgreich!');
-}
-
-async function loadEvents() {
-  const category = document.getElementById('filter-category').value;
-
-  const { data, error } = await supabase
-    .from('events')
-    .select('*')
-    .ilike('category', `%${category}%`);
-
-  if (error) return alert('Fehler beim Laden: ' + error.message);
-
-  const list = document.getElementById('event-list');
-  list.innerHTML = '';
-  map.eachLayer(layer => { if (layer instanceof L.Marker) map.removeLayer(layer); });
-
-  data.forEach(ev => {
-    const li = document.createElement('li');
-    li.innerHTML = `<strong>${ev.name}</strong><br>${ev.description}<br><a href="${ev.website}" target="_blank">Webseite</a>`;
-    list.appendChild(li);
-
-    const [lat, lng] = ev.location.split(',').map(Number);
-    if (!isNaN(lat) && !isNaN(lng)) {
-      L.marker([lat, lng]).addTo(map).bindPopup(ev.name);
+  document.getElementById('nav-event-add').addEventListener('click', async () => {
+    const user = await supabase.auth.getUser();
+    if (!user.data) {
+      alert('Bitte zuerst anmelden!');
+      showSection('login-section');
+      return;
     }
+    showSection('add-section');
+  });
+
+  document.getElementById('nav-logout').addEventListener('click', async () => {
+    await supabase.auth.signOut();
+    alert('Abgemeldet');
+    updateNavForAuth(null);
+    showSection('login-section');
+  });
+
+  document.getElementById('btn-login').addEventListener('click', async () => {
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      alert('Login fehlgeschlagen: ' + error.message);
+      return;
+    }
+    alert('Login erfolgreich!');
+    updateNavForAuth(data.user);
+    showSection('event-finder-section');
+    loadEvents();
+  });
+
+  document.getElementById('btn-signup').addEventListener('click', async () => {
+    const email = document.getElementById('signup-email').value;
+    const password = document.getElementById('signup-password').value;
+    const { error } = await supabase.auth.signUp({ email, password });
+    if (error) alert('Registrierung fehlgeschlagen: ' + error.message);
+    else alert('Registrierung erfolgreich! Bitte einloggen.');
+  });
+
+  document.getElementById('btn-filter').addEventListener('click', () => {
+    loadEvents();
+  });
+
+  document.getElementById('btn-add-event').addEventListener('click', () => {
+    addEvent();
   });
 }
 
-async function addEvent() {
-  const { data: sessionData } = await supabase.auth.getSession();
-  if (!sessionData.session) {
-    alert("Du musst eingeloggt sein, um eine Veranstaltung hinzuzufügen.");
-    showSection('login');
-    return;
-  }
-
-  const name = document.getElementById('event-name').value;
-  const location = document.getElementById('event-location').value;
-  const description = document.getElementById('event-description').value;
-  const time = document.getElementById('event-time').value;
-  const price = document.getElementById('event-price').value;
-  const parking = document.getElementById('event-parking').value;
-  const website = document.getElementById('event-website').value;
-  const category = document.getElementById('event-category').value;
-
-  const flyerFile = document.getElementById('event-flyer').files[0];
-  const attachments = document.getElementById('event-attachments').files;
-
-  let flyer_url = '';
-  const uploaded_attachments = [];
-
-  if (flyerFile) {
-    const { data, error } = await supabase.storage
-      .from('event_assets')
-      .upload(`flyers/${Date.now()}_${flyerFile.name}`, flyerFile);
-    if (!error)
-      flyer_url = supabase.storage.from('event_assets').getPublicUrl(data.path).data.publicUrl;
-  }
-
-  for (let file of attachments) {
-    const { data, error } = await supabase.storage
-      .from('event_assets')
-      .upload(`attachments/${Date.now()}_${file.name}`, file);
-    if (!error) {
-      const url = supabase.storage.from('event_assets').getPublicUrl(data.path).data.publicUrl;
-      uploaded_attachments.push({ name: file.name, url });
-    }
-  }
-
-  const { error } = await supabase.from('events').insert([
-    {
-      name,
-      location,
-      description,
-      time,
-      price,
-      parking,
-      website,
-      flyer_url,
-      attachments: uploaded_attachments,
-      category
-    }
-  ]);
-
-  if (error) alert('Fehler beim Hinzufügen: ' + error.message);
-  else {
-    alert('Veranstaltung hinzugefügt!');
-    loadEvents();
-    showSection('finder');
+function updateNavForAuth(user) {
+  if (user) {
+    document.getElementById('nav-login').classList.add('hidden');
+    document.getElementById('nav-event-add').classList.remove('hidden');
+    document.getElementById('nav-logout').classList.remove('hidden');
+  } else {
+    document.getElementById('nav-login').classList.remove('hidden');
+    document.getElementById('nav-event-add').classList.add('hidden');
+    document.getElementById('nav-logout').classList.add('hidden');
   }
 }
+
+function showSection(sectionId) {
+  const sections = ['login-section', 'event-finder-section', 'add-section'];
+  sections.forEach(id => {
+    document.getElementById(id).style.display = (id === sectionId) ? 'block' : 'none';
+  });
+}
+
+async function geocodeAddress(address) {
+  // OpenStreetMap Nominatim API
+  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`;
+  try {
+    const res = await fetch(url, { headers: { 'User-Agent': 'WoWasLosApp' } });
+    const data = await res.json();
+    if (data && data.length > 0) {
+      return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+    }
+    return null;
+  } catch (e) {
+    console.error('Geocode Error:', e);
+    return null;
+  }
+}
+
+async function loadEvents() {
+  clearMarkers();
+  const select = document.getElementById('filter-category');
+  const selectedCategories = Array.from(select.selectedOptions).map(opt => opt.value);
+  const locationFilter = document.getElementById('filter-location').value.trim();
+
+  let query = supabase.from('events').select('*');
+
+  if (selectedCategories.length > 0) {
+    // filter categories: Supabase 'in' filter
+    query = query.in('category', selectedCategories);
+  }
+
+ 
