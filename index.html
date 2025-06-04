@@ -9,70 +9,60 @@
 </head>
 <body>
   <header>
-    <div style="display: flex; align-items: center;">
-      <img src="logo.jpg" alt="wowaslos Logo" />
-      <h1>WoWasLos</h1>
-    </div>
-    <nav>
-      <a href="#" onclick="showSection('finder')">Veranstaltungsfinder</a>
-      <a href="#" onclick="showSection('login')">Veranstaltung hinzufügen</a>
-    </nav>
+    <img src="logo.jpg" alt="WoWasLos Logo" />
+    <h1>WoWasLos</h1>
   </header>
 
+  <nav>
+    <button onclick="showSection('finder')">Veranstaltungsfinder</button>
+    <button onclick="showSection('login')">Login</button>
+    <button onclick="showSection('add')">Veranstaltung hinzufügen</button>
+  </nav>
+
   <main>
-    <section id="login-section" style="display: none;">
-      <h2>Anmeldung Veranstalter</h2>
+    <section id="finder-section">
+      <h2>Veranstaltungsfinder</h2>
+      <select id="filter-category">
+        <option value="">Alle Kategorien</option>
+        <option value="Dorffest">Dorffest</option>
+        <option value="Konzert">Konzert</option>
+        <option value="Verein">Verein</option>
+      </select>
+      <input id="filter-location" placeholder="Ort oder PLZ" />
+      <button onclick="loadEvents()">Filtern</button>
+      <div id="map"></div>
+      <ul id="event-list"></ul>
+    </section>
+
+    <section id="login-section" style="display:none;">
+      <h2>Login</h2>
       <input type="email" id="email" placeholder="E-Mail" />
       <input type="password" id="password" placeholder="Passwort" />
       <button onclick="login()">Login</button>
-
       <h3>Noch kein Konto?</h3>
       <input type="email" id="signup-email" placeholder="E-Mail" />
       <input type="password" id="signup-password" placeholder="Passwort" />
       <button onclick="signup()">Registrieren</button>
     </section>
 
-    <section id="app-section" style="display: none;">
-      <h2>Neue Veranstaltung hinzufügen</h2>
+    <section id="add-section" style="display:none;">
+      <h3>Neue Veranstaltung hinzufügen</h3>
       <input id="event-name" placeholder="Name der Veranstaltung" />
-      <input id="event-address" placeholder="Adresse (z.B. Straße, Ort)" />
-      <textarea id="event-description" placeholder="Beschreibung"></textarea>
+      <input id="event-location" placeholder="Ort (lat,lng)" />
+      <input id="event-description" placeholder="Beschreibung" />
       <input id="event-time" type="datetime-local" />
       <input id="event-price" placeholder="Preis (Eintritt, Essen)" />
       <input id="event-parking" placeholder="Parkmöglichkeiten" />
       <input id="event-website" placeholder="Webseite (https://...)" />
-      <select id="event-category" multiple>
-        <option value="Dorffest">Dorffest</option>
-        <option value="Konzert">Konzert</option>
-        <option value="Verein">Verein</option>
-        <option value="Markt">Markt</option>
-        <option value="Party">Party</option>
-      </select>
+      <input id="event-category" placeholder="Kategorie (z.B. Konzert, Dorffest)" />
       <input id="event-flyer" type="file" />
       <input id="event-attachments" type="file" multiple />
-      <button onclick="addEvent()">Veranstaltung hinzufügen</button>
-    </section>
-
-    <section id="finder-section">
-      <h2>Veranstaltungen finden</h2>
-      <select id="filter-category" multiple>
-        <option value="Dorffest">Dorffest</option>
-        <option value="Konzert">Konzert</option>
-        <option value="Verein">Verein</option>
-        <option value="Markt">Markt</option>
-        <option value="Party">Party</option>
-      </select>
-      <input id="filter-location" placeholder="Adresse (z.B. Ort oder PLZ)" />
-      <button onclick="loadEvents()">Filtern</button>
-
-      <div id="map"></div>
-      <ul id="event-list"></ul>
+      <button onclick="addEvent()">Hinzufügen</button>
     </section>
   </main>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-  <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
