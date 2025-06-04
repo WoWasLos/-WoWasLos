@@ -11,19 +11,34 @@
   <header>
     <img src="logo.jpg" alt="WoWasLos Logo" />
     <h1>WoWasLos</h1>
-    <nav>
-      <button onclick="showSection('login')">Login</button>
-      <button onclick="showSection('add')">Veranstaltung hinzufügen</button>
-    </nav>
   </header>
 
+  <nav>
+    <button onclick="showSection('finder')">Veranstaltungsfinder</button>
+    <button onclick="showSection('login')">Login</button>
+    <button onclick="showSection('add')">Veranstaltung hinzufügen</button>
+  </nav>
+
   <main>
-    <section id="login-section">
+    <section id="finder-section">
+      <h2>Veranstaltungsfinder</h2>
+      <select id="filter-category">
+        <option value="">Alle Kategorien</option>
+        <option value="Dorffest">Dorffest</option>
+        <option value="Konzert">Konzert</option>
+        <option value="Verein">Verein</option>
+      </select>
+      <input id="filter-location" placeholder="Ort oder PLZ" />
+      <button onclick="loadEvents()">Filtern</button>
+      <div id="map"></div>
+      <ul id="event-list"></ul>
+    </section>
+
+    <section id="login-section" style="display:none;">
       <h2>Login</h2>
       <input type="email" id="email" placeholder="E-Mail" />
       <input type="password" id="password" placeholder="Passwort" />
       <button onclick="login()">Login</button>
-
       <h3>Noch kein Konto?</h3>
       <input type="email" id="signup-email" placeholder="E-Mail" />
       <input type="password" id="signup-password" placeholder="Passwort" />
@@ -44,24 +59,13 @@
       <input id="event-attachments" type="file" multiple />
       <button onclick="addEvent()">Hinzufügen</button>
     </section>
-
-    <section id="app" style="display:none;">
-      <h3>Filter</h3>
-      <select id="filter-category">
-        <option value="">Alle Kategorien</option>
-        <option value="Dorffest">Dorffest</option>
-        <option value="Konzert">Konzert</option>
-        <option value="Verein">Verein</option>
-      </select>
-      <input id="filter-location" placeholder="Ort oder PLZ" />
-      <button onclick="loadEvents()">Filtern</button>
-
-      <div id="map"></div>
-
-      <h2>Veranstaltungen</h2>
-      <ul id="event-list"></ul>
-    </section>
   </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
