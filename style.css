@@ -11,6 +11,7 @@ header {
   background: black;
   color: white;
   padding: 10px;
+  justify-content: space-between;
 }
 
 header img {
@@ -18,27 +19,17 @@ header img {
   margin-right: 15px;
 }
 
-nav {
-  display: flex;
-  gap: 10px;
-  padding: 10px;
-  background: #ddd;
-  justify-content: center;
-}
-
-nav button {
-  padding: 10px 20px;
-  font-weight: bold;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
+nav a {
+  color: white;
+  margin-left: 20px;
+  text-decoration: none;
 }
 
 main {
   padding: 20px;
 }
 
-input, button, select {
+input, button, select, textarea {
   display: block;
   margin: 10px 0;
   padding: 10px;
