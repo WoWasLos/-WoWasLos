@@ -2,70 +2,105 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>WoWasLos</title>
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 <body>
+
   <header>
-    <img src="logo.jpg" alt="WoWasLos Logo" />
+    <img src="logo.jpg" alt="wowaslos Logo" />
     <h1>WoWasLos</h1>
   </header>
 
   <nav>
-    <button onclick="showSection('finder')">Veranstaltungsfinder</button>
-    <button onclick="showSection('login')">Login</button>
-    <button onclick="showSection('add')">Veranstaltung hinzufügen</button>
+    <a href="#" id="nav-login">Login / Registrierung</a>
+    <a href="#" id="nav-event-finder">Veranstaltungsfinder</a>
+    <a href="#" id="nav-event-add">Veranstaltung hinzufügen</a>
+    <a href="#" id="nav-logout" class="hidden">Logout</a>
   </nav>
 
   <main>
-    <section id="finder-section">
-      <h2>Veranstaltungsfinder</h2>
-      <select id="filter-category">
-        <option value="">Alle Kategorien</option>
+    <!-- Login / Registrierung -->
+    <section id="login-section">
+      <h2>Login</h2>
+      <input type="email" id="email" placeholder="E-Mail" />
+      <input type="password" id="password" placeholder="Passwort" />
+      <button id="btn-login">Login</button>
+
+      <h3>Noch kein Konto?</h3>
+      <input type="email" id="signup-email" placeholder="E-Mail" />
+      <input type="password" id="signup-password" placeholder="Passwort" />
+      <button id="btn-signup">Registrieren</button>
+    </section>
+
+    <!-- Veranstaltungsfinder -->
+    <section id="event-finder-section" class="hidden">
+      <div id="event-list-container">
+        <h2>Veranstaltungen</h2>
+
+        <div id="filter-controls">
+          <label for="filter-category">Kategorie (Mehrfachauswahl):</label>
+          <select id="filter-category" multiple>
+            <option value="Dorffest">Dorffest</option>
+            <option value="Konzert">Konzert</option>
+            <option value="Verein">Verein</option>
+          </select>
+
+          <label for="filter-location">Ort oder PLZ:</label>
+          <input id="filter-location" placeholder="Ort oder PLZ eingeben" />
+
+          <button id="btn-filter">Filtern</button>
+        </div>
+
+        <ul id="event-list"></ul>
+      </div>
+
+      <div id="map-container">
+        <div id="map"></div>
+      </div>
+    </section>
+
+    <!-- Veranstaltung hinzufügen -->
+    <section id="add-section" class="hidden">
+      <h2>Neue Veranstaltung hinzufügen</h2>
+      
+      <label for="event-name">Name der Veranstaltung</label>
+      <input id="event-name" type="text" placeholder="Name der Veranstaltung" />
+
+      <label for="event-address">Adresse (Straße, Ort)</label>
+      <input id="event-address" type="text" placeholder="z.B. Musterstraße 1, München" />
+
+      <label for="event-description">Beschreibung</label>
+      <input id="event-description" type="text" placeholder="Beschreibung" />
+
+      <label for="event-time">Datum & Zeit</label>
+      <input id="event-time" type="datetime-local" />
+
+      <label for="event-price">Preis (Eintritt, Essen)</label>
+      <input id="event-price" type="text" placeholder="Preis" />
+
+      <label for="event-parking">Parkmöglichkeiten</label>
+      <input id="event-parking" type="text" placeholder="Parkmöglichkeiten" />
+
+      <label for="event-website">Webseite (https://...)</label>
+      <input id="event-website" type="text" placeholder="Webseite" />
+
+      <label for="event-category">Kategorie (Mehrfachauswahl)</label>
+      <select id="event-category" multiple>
         <option value="Dorffest">Dorffest</option>
         <option value="Konzert">Konzert</option>
         <option value="Verein">Verein</option>
       </select>
-      <input id="filter-location" placeholder="Ort oder PLZ" />
-      <button onclick="loadEvents()">Filtern</button>
-      <div id="map"></div>
-      <ul id="event-list"></ul>
+
+      <label for="event-flyer">Flyer / Bild der Veranstaltung</label>
+      <input id="event-flyer" type="file" accept="image/*" />
+
+      <button id="btn-add-event">Hinzufügen</button>
     </section>
 
-    <section id="login-section" style="display:none;">
-      <h2>Login</h2>
-      <input type="email" id="email" placeholder="E-Mail" />
-      <input type="password" id="password" placeholder="Passwort" />
-      <button onclick="login()">Login</button>
-      <h3>Noch kein Konto?</h3>
-      <input type="email" id="signup-email" placeholder="E-Mail" />
-      <input type="password" id="signup-password" placeholder="Passwort" />
-      <button onclick="signup()">Registrieren</button>
-    </section>
-
-    <section id="add-section" style="display:none;">
-      <h3>Neue Veranstaltung hinzufügen</h3>
-      <input id="event-name" placeholder="Name der Veranstaltung" />
-      <input id="event-location" placeholder="Ort (lat,lng)" />
-      <input id="event-description" placeholder="Beschreibung" />
-      <input id="event-time" type="datetime-local" />
-      <input id="event-price" placeholder="Preis (Eintritt, Essen)" />
-      <input id="event-parking" placeholder="Parkmöglichkeiten" />
-      <input id="event-website" placeholder="Webseite (https://...)" />
-      <input id="event-category" placeholder="Kategorie (z.B. Konzert, Dorffest)" />
-      <input id="event-flyer" type="file" />
-      <input id="event-attachments" type="file" multiple />
-      <button onclick="addEvent()">Hinzufügen</button>
-    </section>
   </main>
-
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-  <script src="script.js"></script>
-</body>
-</html>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
