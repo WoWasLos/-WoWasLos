@@ -3,14 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>wowaslos</title>
+  <title>WoWasLos</title>
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 <body>
   <header>
-    <img src="logo.jpg" alt="wowaslos Logo" />
+    <img src="logo.jpg" alt="WoWasLos Logo" />
     <h1>WoWasLos</h1>
+    <nav>
+      <button onclick="showSection('login')">Login</button>
+      <button onclick="showSection('add')">Veranstaltung hinzufügen</button>
+    </nav>
   </header>
 
   <main>
@@ -24,6 +28,21 @@
       <input type="email" id="signup-email" placeholder="E-Mail" />
       <input type="password" id="signup-password" placeholder="Passwort" />
       <button onclick="signup()">Registrieren</button>
+    </section>
+
+    <section id="add-section" style="display:none;">
+      <h3>Neue Veranstaltung hinzufügen</h3>
+      <input id="event-name" placeholder="Name der Veranstaltung" />
+      <input id="event-location" placeholder="Ort (lat,lng)" />
+      <input id="event-description" placeholder="Beschreibung" />
+      <input id="event-time" type="datetime-local" />
+      <input id="event-price" placeholder="Preis (Eintritt, Essen)" />
+      <input id="event-parking" placeholder="Parkmöglichkeiten" />
+      <input id="event-website" placeholder="Webseite (https://...)" />
+      <input id="event-category" placeholder="Kategorie (z.B. Konzert, Dorffest)" />
+      <input id="event-flyer" type="file" />
+      <input id="event-attachments" type="file" multiple />
+      <button onclick="addEvent()">Hinzufügen</button>
     </section>
 
     <section id="app" style="display:none;">
@@ -41,19 +60,6 @@
 
       <h2>Veranstaltungen</h2>
       <ul id="event-list"></ul>
-
-      <h3>Neue Veranstaltung hinzufügen</h3>
-      <input id="event-name" placeholder="Name der Veranstaltung" />
-      <input id="event-location" placeholder="Ort (lat,lng)" />
-      <input id="event-description" placeholder="Beschreibung" />
-      <input id="event-time" type="datetime-local" />
-      <input id="event-price" placeholder="Preis (Eintritt, Essen)" />
-      <input id="event-parking" placeholder="Parkmöglichkeiten" />
-      <input id="event-website" placeholder="Webseite (https://...)" />
-      <input id="event-category" placeholder="Kategorie (z.B. Konzert, Dorffest)" />
-      <input id="event-flyer" type="file" />
-      <input id="event-attachments" type="file" multiple />
-      <button onclick="addEvent()">Hinzufügen</button>
     </section>
   </main>
 
