@@ -1,36 +1,35 @@
 const supabaseUrl = 'https://bddofzmczzoiyausrdzb.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJkZG9mem1jenpvaXlhdXNyZHpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwMDQwMTIsImV4cCI6MjA2MzU4MDAxMn0.-MISfzyKIP3zUbJl5vOZDlUAGQXBqntbc9r_sG2zsJI';
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+// Karte initialisieren
+const southGermanyBounds = L.latLngBounds(
+  [47.2, 7.5], // Südwest
+  [49.8, 13.0] // Nordost
+);
 
-const southGermanyBounds = L.latLngBounds([47, 7], [50, 13.5]);
-
-const map = L.map('map', {
+let map = L.map('map', {
   maxBounds: southGermanyBounds,
-  maxZoom: 18,
+  maxBoundsViscosity: 1.0,
   minZoom: 6,
-  zoomSnap: 0.25
-}).setView([48.5, 9], 7);
+}).setView([48.5, 9.0], 7);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; OpenStreetMap'
 }).addTo(map);
 
-function showSection(section) {
-  document.getElementById('finder-section').style.display = section === 'finder' ? 'block' : 'none';
-  document.getElementById('add-section').style.display = section === 'add' ? 'block' : 'none';
-  document.getElementById('login-section').style.display = section === 'add' ? 'block' : 'none';
-}
-
-async function login() {
+// Login
+async function loginAndShowForm() {
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) return alert('Login fehlgeschlagen: ' + error.message);
+
   document.getElementById('login-section').style.display = 'none';
   document.getElementById('add-section').style.display = 'block';
 }
 
+// Registrierung
 async function signup() {
   const email = document.getElementById('signup-email').value;
   const password = document.getElementById('signup-password').value;
@@ -39,33 +38,59 @@ async function signup() {
   else alert('Registrierung erfolgreich!');
 }
 
+// Veranstaltungen laden
 async function loadEvents() {
-  const filterLocation = document.getElementById('filter-location').value;
-  const filterCategories = Array.from(document.getElementById('filter-category').selectedOptions).map(o => o.value);
+  const categorySelect = document.getElementById('filter-category');
+  const selectedOptions = Array.from(categorySelect.selectedOptions).map(opt => opt.value);
+  const locationQuery = document.getElementById('filter-location').value;
 
-  let query = supabase.from('events').select('*');
-  if (filterCategories.length > 0) {
-    query = query.in('categories', filterCategories);
+  let { data, error } = await supabase.from('events').select('*');
+  if (error) return alert('Fehler beim Laden: ' + error.message);
+
+  // Filter lokal anwenden
+  if (selectedOptions.length) {
+    data = data.filter(ev => selectedOptions.some(cat => ev.category?.includes(cat)));
   }
 
-  const { data, error } = await query;
-  if (error) return alert('Fehler beim Laden: ' + error.message);
+  if (locationQuery) {
+    data = data.filter(ev => ev.address?.toLowerCase().includes(locationQuery.toLowerCase()));
+  }
 
   const list = document.getElementById('event-list');
   list.innerHTML = '';
-  map.eachLayer(layer => { if (layer instanceof L.Marker) map.removeLayer(layer); });
+  map.eachLayer(layer => {
+    if (layer instanceof L.Marker) map.removeLayer(layer);
+  });
 
-  for (const ev of data) {
+  data.forEach(ev => {
     const li = document.createElement('li');
-    li.innerHTML = `<strong>${ev.name}</strong><br>${ev.description}<br><a href="${ev.website}" target="_blank">Webseite</a><br><img src="${ev.image_url}" width="100" />`;
+    li.innerHTML = `
+      <strong>${ev.name}</strong><br>
+      ${ev.description}<br>
+      ${ev.time ? new Date(ev.time).toLocaleString() + '<br>' : ''}
+      ${ev.website ? `<a href="${ev.website}" target="_blank">Webseite</a><br>` : ''}
+      ${ev.flyer_url ? `<img src="${ev.flyer_url}" alt="Flyer" style="max-width:200px;"><br>` : ''}
+    `;
     list.appendChild(li);
 
     if (ev.lat && ev.lng) {
       L.marker([ev.lat, ev.lng]).addTo(map).bindPopup(ev.name);
     }
-  }
+  });
 }
 
+// Adresse → Koordinaten
+async function geocodeAddress(address) {
+  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`;
+  const response = await fetch(url);
+  const data = await response.json();
+  if (data.length > 0) {
+    return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+  }
+  return null;
+}
+
+// Veranstaltung hinzufügen
 async function addEvent() {
   const name = document.getElementById('event-name').value;
   const address = document.getElementById('event-address').value;
@@ -74,25 +99,28 @@ async function addEvent() {
   const price = document.getElementById('event-price').value;
   const parking = document.getElementById('event-parking').value;
   const website = document.getElementById('event-website').value;
-  const categories = Array.from(document.getElementById('event-category').selectedOptions).map(o => o.value);
 
-  const imageFile = document.getElementById('event-image').files[0];
-  let image_url = '';
+  const categorySelect = document.getElementById('event-category');
+  const selectedCategories = Array.from(categorySelect.selectedOptions).map(opt => opt.value);
 
-  if (imageFile) {
-    const path = `images/${Date.now()}_${imageFile.name}`;
-    const { data, error } = await supabase.storage.from('event_assets').upload(path, imageFile);
-    if (!error) {
-      image_url = supabase.storage.from('event_assets').getPublicUrl(path).data.publicUrl;
+  const flyerFile = document.getElementById('event-flyer').files[0];
+
+  const coords = await geocodeAddress(address);
+  if (!coords) return alert('Adresse konnte nicht gefunden werden');
+
+  let flyer_url = '';
+  if (flyerFile) {
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('event-assets')
+      .upload(`flyers/${Date.now()}_${flyerFile.name.toLowerCase()}`, flyerFile);
+
+    if (uploadError) {
+      console.error(uploadError);
+      return alert('Bild konnte nicht hochgeladen werden');
     }
+
+    flyer_url = supabase.storage.from('event-assets').getPublicUrl(uploadData.path).data.publicUrl;
   }
-
-  // Adresse in Koordinaten umwandeln
-  const coords = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`).then(r => r.json());
-  if (!coords[0]) return alert('Adresse konnte nicht gefunden werden.');
-
-  const lat = parseFloat(coords[0].lat);
-  const lng = parseFloat(coords[0].lon);
 
   const { error } = await supabase.from('events').insert([
     {
@@ -103,16 +131,16 @@ async function addEvent() {
       price,
       parking,
       website,
-      image_url,
-      lat,
-      lng,
-      categories
+      category: selectedCategories,
+      flyer_url,
+      lat: coords.lat,
+      lng: coords.lng
     }
   ]);
 
-  if (error) alert('Fehler beim Hinzufügen: ' + error.message);
+  if (error) return alert('Fehler beim Speichern: ' + error.message);
   else {
-    alert('Veranstaltung hinzugefügt!');
+    alert('Veranstaltung gespeichert!');
     loadEvents();
   }
 }
