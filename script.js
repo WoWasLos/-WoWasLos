@@ -2,63 +2,50 @@ const supabaseUrl = 'https://bddofzmczzoiyausrdzb.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJkZG9mem1jenpvaXlhdXNyZHpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwMDQwMTIsImV4cCI6MjA2MzU4MDAxMn0.-MISfzyKIP3zUbJl5vOZDlUAGQXBqntbc9r_sG2zsJI';
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-// Leaflet-Karte initialisieren
 let map = L.map('map').setView([51.1657, 10.4515], 6);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; OpenStreetMap'
 }).addTo(map);
 
-// Login-Funktion
 async function login() {
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
-
-  console.log('Login versucht mit:', email);
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
-  if (error) {
-    console.error('Login fehlgeschlagen:', error.message);
-    alert('Login fehlgeschlagen: ' + error.message);
-  } else {
-    console.log('Login erfolgreich:', data);
-    alert('Login erfolgreich!');
-    document.getElementById('login-section').style.display = 'none';
-document.getElementById('app').style.display = 'block';
-loadEvents(); // lade Veranstaltungen nach Login
-  }
+  if (error) return alert('Login fehlgeschlagen: ' + error.message);
+
+  document.getElementById('login-section').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  loadEvents();
 }
 
-// Registrierung (Sign-Up)
 async function signup() {
   const email = document.getElementById('signup-email').value;
   const password = document.getElementById('signup-password').value;
   const { error } = await supabase.auth.signUp({ email, password });
-
-  if (error) {
-    alert('Registrierung fehlgeschlagen: ' + error.message);
-  } else {
-    alert('Registrierung erfolgreich. Du kannst dich jetzt einloggen.');
-  }
+  if (error) alert('Registrierung fehlgeschlagen: ' + error.message);
+  else alert('Registrierung erfolgreich!');
 }
 
-// Events laden und auf der Karte anzeigen
 async function loadEvents() {
-  const { data, error } = await supabase.from('events').select('*');
+  const category = document.getElementById('filter-category').value;
 
-  if (error) {
-    alert('Fehler beim Laden der Veranstaltungen: ' + error.message);
-    return;
-  }
+  const { data, error } = await supabase
+    .from('events')
+    .select('*')
+    .ilike('category', `%${category}%`);
+
+  if (error) return alert('Fehler beim Laden: ' + error.message);
 
   const list = document.getElementById('event-list');
-  list.innerHTML = ''; // alte Einträge löschen
+  list.innerHTML = '';
+  map.eachLayer(layer => { if (layer instanceof L.Marker) map.removeLayer(layer); });
 
   data.forEach(ev => {
     const li = document.createElement('li');
-    li.textContent = `${ev.name}: ${ev.description}`;
+    li.innerHTML = `<strong>${ev.name}</strong><br>${ev.description}<br><a href="${ev.website}" target="_blank">Webseite</a>`;
     list.appendChild(li);
 
-    // Marker auf der Karte
     const [lat, lng] = ev.location.split(',').map(Number);
     if (!isNaN(lat) && !isNaN(lng)) {
       L.marker([lat, lng]).addTo(map).bindPopup(ev.name);
@@ -66,26 +53,55 @@ async function loadEvents() {
   });
 }
 
-// Neue Veranstaltung hinzufügen
 async function addEvent() {
   const name = document.getElementById('event-name').value;
   const location = document.getElementById('event-location').value;
   const description = document.getElementById('event-description').value;
+  const time = document.getElementById('event-time').value;
+  const price = document.getElementById('event-price').value;
+  const parking = document.getElementById('event-parking').value;
+  const website = document.getElementById('event-website').value;
+  const category = document.getElementById('event-category').value;
 
-  if (!name || !location) {
-    alert('Bitte Name und Ort angeben (z. B. 51.23,10.12)');
-    return;
+  const flyerFile = document.getElementById('event-flyer').files[0];
+  const attachments = document.getElementById('event-attachments').files;
+
+  let flyer_url = '';
+  const uploaded_attachments = [];
+
+  if (flyerFile) {
+    const { data, error } = await supabase.storage
+      .from('event_assets')
+      .upload(`flyers/${Date.now()}_${flyerFile.name}`, flyerFile);
+    if (!error)
+      flyer_url = supabase.storage.from('event_assets').getPublicUrl(data.path).data.publicUrl;
+  }
+
+  for (let file of attachments) {
+    const { data, error } = await supabase.storage
+      .from('event_assets')
+      .upload(`attachments/${Date.now()}_${file.name}`, file);
+    if (!error) {
+      const url = supabase.storage.from('event_assets').getPublicUrl(data.path).data.publicUrl;
+      uploaded_attachments.push({ name: file.name, url });
+    }
   }
 
   const { error } = await supabase.from('events').insert([
-    { name, location, description }
+    {
+      name,
+      location,
+      description,
+      time,
+      price,
+      parking,
+      website,
+      flyer_url,
+      attachments: uploaded_attachments,
+      category
+    }
   ]);
 
-  if (error) {
-    alert('Fehler beim Hinzufügen: ' + error.message);
-  } else {
-    loadEvents(); // neu laden
-  }
+  if (error) alert('Fehler beim Hinzufügen: ' + error.message);
+  else loadEvents();
 }
-
-
