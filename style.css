@@ -19,21 +19,19 @@ header img {
 }
 
 nav {
-  margin-left: auto;
   display: flex;
   gap: 10px;
+  padding: 10px;
+  background: #ddd;
+  justify-content: center;
 }
 
 nav button {
-  background: #333;
-  color: white;
+  padding: 10px 20px;
+  font-weight: bold;
   border: none;
-  padding: 8px 12px;
+  border-radius: 5px;
   cursor: pointer;
-}
-
-nav button:hover {
-  background: #555;
 }
 
 main {
