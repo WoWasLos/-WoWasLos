@@ -8,8 +8,8 @@ body {
 header {
   display: flex;
   align-items: center;
-  background: #F5F5DC;
-  color: black;
+  background: black;
+  color: white;
   padding: 10px;
 }
 
