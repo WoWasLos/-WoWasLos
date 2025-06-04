@@ -1,79 +1,144 @@
-// Supabase Setup
 const supabaseUrl = 'https://bddofzmczzoiyausrdzb.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJkZG9mem1jenpvaXlhdXNyZHpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwMDQwMTIsImV4cCI6MjA2MzU4MDAxMn0.-MISfzyKIP3zUbJl5vOZDlUAGQXBqntbc9r_sG2zsJI';
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-// Karte initialisieren
+let map;
+let markers = [];
+
 const southGermanyBounds = L.latLngBounds(
-  [47.2, 7.5],  // Südwest (lat, lng)
-  [49.8, 13.0]  // Nordost (lat, lng)
+  L.latLng(46.5, 6.5),  // Südwest (z.B. Bodensee)
+  L.latLng(50.7, 14.0)  // Nordost (z.B. Dresden Grenze)
 );
 
-let map = L.map('map', {
-  maxBounds: southGermanyBounds,
-  maxBoundsViscosity: 1.0,
-  minZoom: 6,
-}).setView([48.5, 9.0], 7);
+window.onload = () => {
+  initMap();
+  setupEventListeners();
+  checkAuthState();
+};
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '&copy; OpenStreetMap'
-}).addTo(map);
+function initMap() {
+  map = L.map('map', {
+    maxBounds: southGermanyBounds,
+    maxBoundsViscosity: 1.0,
+    minZoom: 7,
+    maxZoom: 16,
+    zoomControl: true,
+  }).setView([48.7, 11.5], 8);
 
-// Login und direkt Veranstaltung hinzufügen sichtbar machen
-async function loginAndShowAdd() {
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
-
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) return alert('Login fehlgeschlagen: ' + error.message);
-
-  // UI anpassen
-  document.getElementById('login-section').style.display = 'none';
-  document.getElementById('add-section').style.display = 'block';
-  document.getElementById('btn-event-add').style.display = 'inline-block';
-  document.getElementById('btn-event-finder').style.display = 'inline-block';
-  document.getElementById('btn-logout').style.display = 'inline-block';
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap'
+  }).addTo(map);
 }
 
-// Registrierung
-async function signup() {
-  const email = document.getElementById('signup-email').value;
-  const password = document.getElementById('signup-password').value;
-  const { error } = await supabase.auth.signUp({ email, password });
-  if (error) alert('Registrierung fehlgeschlagen: ' + error.message);
-  else alert('Registrierung erfolgreich!');
+function clearMarkers() {
+  markers.forEach(m => map.removeLayer(m));
+  markers = [];
 }
 
-// Logout
-async function logout() {
-  await supabase.auth.signOut();
-  document.getElementById('login-section').style.display = 'block';
-  document.getElementById('add-section').style.display = 'none';
-  document.getElementById('event-finder-section').style.display = 'none';
-  document.getElementById('btn-event-add').style.display = 'none';
-  document.getElementById('btn-event-finder').style.display = 'inline-block';
-  document.getElementById('btn-logout').style.display = 'none';
+function setupEventListeners() {
+  document.getElementById('nav-login').addEventListener('click', () => {
+    showSection('login-section');
+  });
+
+  document.getElementById('nav-event-finder').addEventListener('click', () => {
+    showSection('event-finder-section');
+    loadEvents();
+  });
+
+  document.getElementById('nav-event-add').addEventListener('click', async () => {
+    const user = await supabase.auth.getUser();
+    if (!user.data) {
+      alert('Bitte zuerst anmelden!');
+      showSection('login-section');
+      return;
+    }
+    showSection('add-section');
+  });
+
+  document.getElementById('nav-logout').addEventListener('click', async () => {
+    await supabase.auth.signOut();
+    alert('Abgemeldet');
+    updateNavForAuth(null);
+    showSection('login-section');
+  });
+
+  document.getElementById('btn-login').addEventListener('click', async () => {
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      alert('Login fehlgeschlagen: ' + error.message);
+      return;
+    }
+    alert('Login erfolgreich!');
+    updateNavForAuth(data.user);
+    showSection('event-finder-section');
+    loadEvents();
+  });
+
+  document.getElementById('btn-signup').addEventListener('click', async () => {
+    const email = document.getElementById('signup-email').value;
+    const password = document.getElementById('signup-password').value;
+    const { error } = await supabase.auth.signUp({ email, password });
+    if (error) alert('Registrierung fehlgeschlagen: ' + error.message);
+    else alert('Registrierung erfolgreich! Bitte einloggen.');
+  });
+
+  document.getElementById('btn-filter').addEventListener('click', () => {
+    loadEvents();
+  });
+
+  document.getElementById('btn-add-event').addEventListener('click', () => {
+    addEvent();
+  });
 }
 
-// Veranstaltungen laden mit Filter
+function updateNavForAuth(user) {
+  if (user) {
+    document.getElementById('nav-login').classList.add('hidden');
+    document.getElementById('nav-event-add').classList.remove('hidden');
+    document.getElementById('nav-logout').classList.remove('hidden');
+  } else {
+    document.getElementById('nav-login').classList.remove('hidden');
+    document.getElementById('nav-event-add').classList.add('hidden');
+    document.getElementById('nav-logout').classList.add('hidden');
+  }
+}
+
+function showSection(sectionId) {
+  const sections = ['login-section', 'event-finder-section', 'add-section'];
+  sections.forEach(id => {
+    document.getElementById(id).style.display = (id === sectionId) ? 'block' : 'none';
+  });
+}
+
+async function geocodeAddress(address) {
+  // OpenStreetMap Nominatim API
+  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`;
+  try {
+    const res = await fetch(url, { headers: { 'User-Agent': 'WoWasLosApp' } });
+    const data = await res.json();
+    if (data && data.length > 0) {
+      return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+    }
+    return null;
+  } catch (e) {
+    console.error('Geocode Error:', e);
+    return null;
+  }
+}
+
 async function loadEvents() {
-  const categorySelect = document.getElementById('filter-category');
-  const selectedCategories = Array.from(categorySelect.selectedOptions).map(opt => opt.value);
-  const locationQuery = document.getElementById('filter-location').value.toLowerCase();
+  clearMarkers();
+  const select = document.getElementById('filter-category');
+  const selectedCategories = Array.from(select.selectedOptions).map(opt => opt.value);
+  const locationFilter = document.getElementById('filter-location').value.trim();
 
-  let { data, error } = await supabase.from('events').select('*');
-  if (error) return alert('Fehler beim Laden: ' + error.message);
+  let query = supabase.from('events').select('*');
 
-  // Filter lokal anwenden
-  if (selectedCategories.length) {
-    data = data.filter(ev => ev.category && selectedCategories.some(cat => ev.category.includes(cat)));
+  if (selectedCategories.length > 0) {
+    // filter categories: Supabase 'in' filter
+    query = query.in('category', selectedCategories);
   }
 
-  if (locationQuery) {
-    data = data.filter(ev => ev.address && ev.address.toLowerCase().includes(locationQuery));
-  }
-
-  const list = document.getElementById('event-list');
-  list.innerHTML = '';
-
-  // Alle Marker entfernen
+ 
