@@ -27,6 +27,16 @@
     </section>
 
     <section id="app" style="display:none;">
+      <h3>Filter</h3>
+      <select id="filter-category">
+        <option value="">Alle Kategorien</option>
+        <option value="Dorffest">Dorffest</option>
+        <option value="Konzert">Konzert</option>
+        <option value="Verein">Verein</option>
+      </select>
+      <input id="filter-location" placeholder="Ort oder PLZ" />
+      <button onclick="loadEvents()">Filtern</button>
+
       <div id="map"></div>
 
       <h2>Veranstaltungen</h2>
@@ -36,6 +46,13 @@
       <input id="event-name" placeholder="Name der Veranstaltung" />
       <input id="event-location" placeholder="Ort (lat,lng)" />
       <input id="event-description" placeholder="Beschreibung" />
+      <input id="event-time" type="datetime-local" />
+      <input id="event-price" placeholder="Preis (Eintritt, Essen)" />
+      <input id="event-parking" placeholder="Parkmöglichkeiten" />
+      <input id="event-website" placeholder="Webseite (https://...)" />
+      <input id="event-category" placeholder="Kategorie (z.B. Konzert, Dorffest)" />
+      <input id="event-flyer" type="file" />
+      <input id="event-attachments" type="file" multiple />
       <button onclick="addEvent()">Hinzufügen</button>
     </section>
   </main>
