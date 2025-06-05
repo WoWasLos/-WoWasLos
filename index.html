@@ -3,37 +3,48 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Veranstaltungen Karte</title>
+  <title>Veranstaltungen im Schwarzwald</title>
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 </head>
 <body>
+  <header>
+    <div class="logo">🎉 Schwarzwald Events</div>
+    <nav>
+      <button id="find-btn">Veranstaltung finden</button>
+      <button id="add-event-btn">Veranstaltung hinzufügen</button>
+    </nav>
+  </header>
+
   <div id="container">
     <aside id="sidebar">
       <h2>Veranstaltungen</h2>
+      <label for="category-filter">Kategorie:</label>
+      <select id="category-filter">
+        <option value="">Alle</option>
+        <option value="Konzert">Konzert</option>
+        <option value="Markt">Markt</option>
+        <option value="Theater">Theater</option>
+      </select>
       <div id="events-list"></div>
-      <button id="add-event-btn">Veranstaltung hinzufügen</button>
     </aside>
 
-    <main id="main-content">
-      <div id="filter">
-        <label for="category-filter">Kategorie:</label>
-        <select id="category-filter">
-          <option value="">Alle</option>
-          <option value="Konzert">Konzert</option>
-          <option value="Theater">Theater</option>
-          <option value="Markt">Markt</option>
-        </select>
-      </div>
-      <div id="map"></div>
-    </main>
+    <main id="map"></main>
   </div>
 
   <!-- Modal -->
   <div id="modal" class="hidden">
     <div class="modal-content">
       <span id="close-modal">&times;</span>
-      <form id="event-form">
+
+      <div id="auth" class="hidden">
+        <h3>Login</h3>
+        <input type="email" id="email" placeholder="E-Mail" />
+        <input type="password" id="password" placeholder="Passwort" />
+        <button id="login-btn">Login</button>
+      </div>
+
+      <form id="event-form" class="hidden">
         <h3>Neue Veranstaltung</h3>
         <input type="text" id="name" placeholder="Name" required />
         <input type="text" id="description" placeholder="Beschreibung" required />
@@ -43,12 +54,6 @@
         <input type="file" id="flyer" />
         <button type="submit">Hinzufügen</button>
       </form>
-      <div id="auth" class="hidden">
-        <h3>Login</h3>
-        <input type="email" id="email" placeholder="E-Mail" />
-        <input type="password" id="password" placeholder="Passwort" />
-        <button id="login-btn">Login</button>
-      </div>
     </div>
   </div>
 
