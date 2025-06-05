@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>WoWasLos</title>
   <link rel="stylesheet" href="style.css" />
   <link rel="icon" type="image/png" href="dein-logo.png" />
@@ -39,32 +39,36 @@
     </section>
   </main>
 
-  <!-- Login modal -->
+  <!-- Login/Signup Modal -->
   <div id="loginModal" class="modal hidden">
     <div class="modal-content">
       <span class="close" onclick="closeLoginModal()">&times;</span>
-      <h2>Login</h2>
-      <input type="email" id="loginEmail" placeholder="E-Mail" />
-      <input type="password" id="loginPassword" placeholder="Passwort" />
-      <button onclick="login()">Login</button>
+      <h2 id="authTitle">Login</h2>
+      <input type="email" id="authEmail" placeholder="E-Mail" />
+      <input type="password" id="authPassword" placeholder="Passwort" />
+      <button id="authActionBtn" onclick="handleAuth()">Login</button>
+      <p>
+        <a href="#" id="toggleAuthMode" onclick="toggleAuthMode()"
+          >Noch kein Konto? Jetzt registrieren</a
+        >
+      </p>
     </div>
   </div>
 
-  <!-- Add Event modal -->
-  <div id="addEventModal" class="modal hidden">
-    <div class="modal-content">
+  <!-- Add Event Overlay -->
+  <div id="addEventOverlay" class="modal hidden">
+    <div class="modal-content add-event-form">
       <span class="close" onclick="closeAddEventModal()">&times;</span>
       <h2>Veranstaltung hinzufügen</h2>
       <input type="text" id="eventTitle" placeholder="Titel" />
-      <input type="text" id="eventDescription" placeholder="Beschreibung" />
+      <textarea id="eventDescription" placeholder="Beschreibung"></textarea>
       <select id="eventCategory">
         <option value="Konzert">Konzert</option>
         <option value="Festival">Festival</option>
         <option value="Markt">Markt</option>
       </select>
-      <input type="number" step="any" id="eventLat" placeholder="Breitengrad (lat)" />
-      <input type="number" step="any" id="eventLng" placeholder="Längengrad (lng)" />
-      <button onclick="submitEvent()">Hinzufügen</button>
+      <input type="text" id="eventAddress" placeholder="Adresse" />
+      <button onclick="submitEvent()">Speichern</button>
     </div>
   </div>
 </body>
