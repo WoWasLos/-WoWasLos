@@ -18,7 +18,6 @@ function initMap() {
     attribution: '© OpenStreetMap contributors'
   }).addTo(map);
 
-  // Begrenzung auf Schwarzwald
   const bounds = L.latLngBounds(
     L.latLng(47.5, 7.5),
     L.latLng(49.0, 9.5)
@@ -85,8 +84,8 @@ function filterEvents() {
 function handleAddEventClick() {
   const user = supabase.auth.user();
   if (user) {
-    // redirect to add event form (optional)
-    alert("Du bist bereits eingeloggt. Hier könntest du ein Formular anzeigen.");
+    alert("Du bist eingeloggt. Hier könnte ein Formular erscheinen.");
+    scrollToEvents();
   } else {
     document.getElementById('loginModal').classList.remove('hidden');
   }
@@ -97,12 +96,14 @@ function login() {
   const password = document.getElementById('loginPassword').value;
 
   supabase.auth.signInWithPassword({ email, password })
-    .then(({ error }) => {
+    .then(async ({ error }) => {
       if (error) {
-        alert("Login fehlgeschlagen");
+        alert("Login fehlgeschlagen: " + error.message);
       } else {
         alert("Login erfolgreich");
         document.getElementById('loginModal').classList.add('hidden');
+        await loadEvents();
+        scrollToEvents();
       }
     });
 }
