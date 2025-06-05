@@ -66,6 +66,7 @@ main {
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 1000;
 }
 
 .modal-content {
@@ -73,6 +74,7 @@ main {
   padding: 20px;
   width: 300px;
   position: relative;
+  border-radius: 8px;
 }
 
 .close {
@@ -95,6 +97,4 @@ ul#eventList li {
   margin: 10px 0;
   border-bottom: 1px solid #ccc;
   padding-bottom: 10px;
-}
-
 }
