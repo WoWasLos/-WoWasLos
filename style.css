@@ -60,13 +60,13 @@ main {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
   background: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: 9999;
 }
 
 .modal-content {
@@ -74,7 +74,33 @@ main {
   padding: 20px;
   width: 300px;
   position: relative;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
   border-radius: 8px;
+}
+
+.modal-content.add-event-form {
+  width: 400px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-content input,
+.modal-content textarea,
+.modal-content select {
+  width: 100%;
+  margin: 10px 0;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+.modal-content button {
+  padding: 10px;
+  width: 100%;
+  background-color: #333;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
 }
 
 .close {
@@ -82,6 +108,7 @@ main {
   right: 10px;
   top: 5px;
   cursor: pointer;
+  font-size: 20px;
 }
 
 .hidden {
@@ -97,4 +124,13 @@ ul#eventList li {
   margin: 10px 0;
   border-bottom: 1px solid #ccc;
   padding-bottom: 10px;
+}
+
+#toggleAuthMode {
+  display: block;
+  text-align: center;
+  margin-top: 10px;
+  color: #007bff;
+  cursor: pointer;
+  text-decoration: underline;
 }
