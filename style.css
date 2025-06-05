@@ -32,7 +32,6 @@ nav button {
   color: white;
   border: none;
   cursor: pointer;
-  border-radius: 4px;
 }
 
 main {
@@ -41,51 +40,10 @@ main {
 }
 
 .sidebar {
-  width: 320px;
+  width: 300px;
   background-color: #f4f4f4;
   padding: 20px;
   overflow-y: auto;
-}
-
-.sidebar h2 {
-  margin-top: 0;
-}
-
-.sidebar label {
-  display: block;
-  margin-top: 10px;
-  font-weight: bold;
-}
-
-.sidebar select,
-.sidebar input,
-.sidebar textarea {
-  width: 100%;
-  margin-top: 5px;
-  padding: 6px;
-  box-sizing: border-box;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-  font-size: 1em;
-}
-
-.sidebar textarea {
-  resize: vertical;
-  min-height: 60px;
-}
-
-.sidebar ul#eventList {
-  list-style: none;
-  padding: 0;
-  margin-top: 10px;
-  max-height: 60vh;
-  overflow-y: auto;
-}
-
-.sidebar ul#eventList li {
-  margin: 10px 0;
-  border-bottom: 1px solid #ccc;
-  padding-bottom: 10px;
 }
 
 .map-container {
@@ -104,7 +62,7 @@ main {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -114,10 +72,14 @@ main {
 .modal-content {
   background: white;
   padding: 20px;
-  border-radius: 8px;
+  width: 300px;
   position: relative;
-  max-height: 90vh;
-  overflow-y: auto;
+  border-radius: 8px;
+}
+
+.modal-content.large {
+  width: 500px;
+  height: auto;
 }
 
 .close {
@@ -125,10 +87,19 @@ main {
   right: 10px;
   top: 5px;
   cursor: pointer;
-  font-size: 1.5em;
-  font-weight: bold;
 }
 
 .hidden {
   display: none;
+}
+
+ul#eventList {
+  list-style: none;
+  padding: 0;
+}
+
+ul#eventList li {
+  margin: 10px 0;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 10px;
 }
