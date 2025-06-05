@@ -9,6 +9,8 @@ let markers = [];
 document.addEventListener("DOMContentLoaded", async () => {
   initMap();
   await loadEvents();
+
+  document.getElementById('filterBtn').addEventListener('click', filterEvents);
 });
 
 function initMap() {
@@ -39,7 +41,7 @@ function updateEventList(events) {
     if (event.lat && event.lng) {
       const marker = L.marker([event.lat, event.lng])
         .addTo(map)
-        .bindPopup(`<strong>${event.titel}</strong><br>${event.beschreibung}`);
+        .bindPopup(`<strong>${event.titel}</strong><br>${event.beschreibung || ''}`);
       markers.push(marker);
     }
   });
@@ -85,27 +87,6 @@ async function filterEvents() {
   updateEventList(filtered);
 }
 
-async function handleAddEventClick() {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (user) {
-    showAddEventForm();
-  } else {
-    document.getElementById('loginModal').classList.remove('hidden');
-  }
-}
-
-function showAddEventForm() {
-  document.getElementById('addEventModal').classList.remove('hidden');
-}
-
-function closeAddEventModal() {
-  document.getElementById('addEventModal').classList.add('hidden');
-}
-
-function closeLoginModal() {
-  document.getElementById('loginModal').classList.add('hidden');
-}
-
 async function getCoordinatesFromAddress(address) {
   const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`;
   const res = await fetch(url);
@@ -114,57 +95,15 @@ async function getCoordinatesFromAddress(address) {
   return { lat: parseFloat(results[0].lat), lng: parseFloat(results[0].lon) };
 }
 
-async function submitEvent() {
-  const titel = document.getElementById('eventTitle').value;
-  const beschreibung = document.getElementById('eventDescription').value;
-  const kategorie = document.getElementById('eventCategory').value;
-  const adresse = document.getElementById('eventAddress').value;
-
-  if (!titel || !adresse) return alert("Bitte alle Pflichtfelder ausfüllen.");
-
-  const coords = await getCoordinatesFromAddress(adresse);
-  if (!coords) return alert("Adresse konnte nicht gefunden werden.");
-
-  const { error } = await supabase.from('events').insert([{
-    titel,
-    beschreibung,
-    kategorie,
-    ort: adresse,
-    lat: coords.lat,
-    lng: coords.lng
-  }]);
-
-  if (error) return alert("Fehler: " + error.message);
-
-  alert("Veranstaltung hinzugefügt!");
-  closeAddEventModal();
-  await loadEvents();
-}
-
-function login() {
-  const email = document.getElementById('loginEmail').value;
-  const password = document.getElementById('loginPassword').value;
-
-  supabase.auth.signInWithPassword({ email, password }).then(({ error }) => {
-    if (error) alert("Login fehlgeschlagen");
-    else {
-      alert("Eingeloggt");
-      closeLoginModal();
-      showAddEventForm();
-    }
-  });
-}
-
-function signup() {
-  const email = document.getElementById('loginEmail').value;
-  const password = document.getElementById('loginPassword').value;
-
-  supabase.auth.signUp({ email, password }).then(({ error }) => {
-    if (error) alert("Registrierung fehlgeschlagen");
-    else alert("Registrierung erfolgreich. Jetzt einloggen.");
-  });
-}
-
 function scrollToEvents() {
   document.querySelector('.sidebar').scrollIntoView({ behavior: 'smooth' });
+}
+
+async function goToAddEvent() {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    window.location.href = 'addevent.html';
+  } else {
+    window.location.href = 'login.html?redirect=addevent.html';
+  }
 }
