@@ -46,6 +46,14 @@ main {
   overflow-y: auto;
 }
 
+.sidebar input,
+.sidebar select {
+  display: block;
+  width: 100%;
+  margin-bottom: 15px;
+  padding: 6px;
+}
+
 .map-container {
   flex: 1;
   position: relative;
@@ -77,9 +85,8 @@ main {
   border-radius: 8px;
 }
 
-.modal-content.wide-modal {
+.wide-modal {
   width: 500px;
-  height: auto;
 }
 
 .close {
