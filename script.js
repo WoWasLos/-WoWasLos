@@ -6,21 +6,24 @@ const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 let map;
 let markers = [];
 
-let isLoginMode = true;
-
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener("DOMContentLoaded", async () => {
   initMap();
   await loadEvents();
+
+  // Session laden
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session) {
+    console.log("Eingeloggt als:", session.user.email);
+  }
 });
 
 function initMap() {
   map = L.map('map').setView([48.1, 8.2], 9);
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors',
+    attribution: '© OpenStreetMap contributors'
   }).addTo(map);
 
-  // Begrenzung auf Schwarzwald
   const bounds = L.latLngBounds(L.latLng(47.5, 7.5), L.latLng(49.0, 9.5));
   map.setMaxBounds(bounds);
 }
@@ -33,10 +36,10 @@ async function loadEvents() {
   }
 
   document.getElementById('eventList').innerHTML = '';
-  markers.forEach((m) => map.removeLayer(m));
+  markers.forEach(m => map.removeLayer(m));
   markers = [];
 
-  data.forEach((event) => {
+  data.forEach(event => {
     const li = document.createElement('li');
     li.textContent = `${event.titel} (${event.kategorie})`;
     document.getElementById('eventList').appendChild(li);
@@ -53,110 +56,90 @@ function filterEvents() {
   if (category === 'Alle') {
     loadEvents();
   } else {
-    supabase
-      .from('events')
-      .select('*')
-      .eq('kategorie', category)
-      .then(({ data, error }) => {
-        if (error) {
-          console.error(error);
-          return;
-        }
+    supabase.from('events').select('*').eq('kategorie', category).then(({ data, error }) => {
+      if (error) {
+        console.error(error);
+        return;
+      }
 
-        document.getElementById('eventList').innerHTML = '';
-        markers.forEach((m) => map.removeLayer(m));
-        markers = [];
+      document.getElementById('eventList').innerHTML = '';
+      markers.forEach(m => map.removeLayer(m));
+      markers = [];
 
-        data.forEach((event) => {
-          const li = document.createElement('li');
-          li.textContent = `${event.titel} (${event.kategorie})`;
-          document.getElementById('eventList').appendChild(li);
+      data.forEach(event => {
+        const li = document.createElement('li');
+        li.textContent = `${event.titel} (${event.kategorie})`;
+        document.getElementById('eventList').appendChild(li);
 
-          const marker = L.marker([event.lat, event.lng])
-            .addTo(map)
-            .bindPopup(`<strong>${event.titel}</strong><br>${event.beschreibung}`);
-          markers.push(marker);
-        });
+        const marker = L.marker([event.lat, event.lng])
+          .addTo(map)
+          .bindPopup(`<strong>${event.titel}</strong><br>${event.beschreibung}`);
+        markers.push(marker);
       });
+    });
   }
 }
 
-function scrollToEvents() {
-  document.querySelector('.sidebar').scrollIntoView({ behavior: 'smooth' });
+async function handleAddEventClick() {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    showAddEventForm();
+  } else {
+    document.getElementById('loginModal').classList.remove('hidden');
+  }
 }
 
-function handleAddEventClick() {
-  const user = supabase.auth.getUser().then(({ data }) => data.user);
-  user.then((u) => {
-    if (u) {
-      showAddEventModal();
+function showAddEventForm() {
+  document.getElementById('addEventModal').classList.remove('hidden');
+}
+
+function closeAddEventModal() {
+  document.getElementById('addEventModal').classList.add('hidden');
+}
+
+async function submitEvent() {
+  const titel = document.getElementById('eventTitle').value;
+  const beschreibung = document.getElementById('eventDescription').value;
+  const kategorie = document.getElementById('eventCategory').value;
+  const lat = parseFloat(document.getElementById('eventLat').value);
+  const lng = parseFloat(document.getElementById('eventLng').value);
+
+  if (!titel || isNaN(lat) || isNaN(lng)) {
+    alert("Bitte alle Pflichtfelder korrekt ausfüllen.");
+    return;
+  }
+
+  const { error } = await supabase.from('events').insert([
+    { titel, beschreibung, kategorie, lat, lng }
+  ]);
+
+  if (error) {
+    alert("Fehler beim Hinzufügen: " + error.message);
+  } else {
+    alert("Veranstaltung hinzugefügt!");
+    closeAddEventModal();
+    await loadEvents();
+  }
+}
+
+function login() {
+  const email = document.getElementById('loginEmail').value;
+  const password = document.getElementById('loginPassword').value;
+
+  supabase.auth.signInWithPassword({ email, password }).then(({ error }) => {
+    if (error) {
+      alert("Login fehlgeschlagen");
     } else {
-      showLoginModal();
+      alert("Login erfolgreich");
+      document.getElementById('loginModal').classList.add('hidden');
     }
   });
-}
-
-function showLoginModal() {
-  document.getElementById('loginModal').classList.remove('hidden');
 }
 
 function closeLoginModal() {
   document.getElementById('loginModal').classList.add('hidden');
 }
 
-function toggleAuthMode() {
-  isLoginMode = !isLoginMode;
-  document.getElementById('authTitle').textContent = isLoginMode ? 'Login' : 'Registrieren';
-  document.getElementById('authActionBtn').textContent = isLoginMode ? 'Login' : 'Registrieren';
-  document.getElementById('toggleAuthMode').textContent = isLoginMode
-    ? 'Noch kein Konto? Jetzt registrieren'
-    : 'Bereits ein Konto? Hier anmelden';
+function scrollToEvents() {
+  document.querySelector('.sidebar').scrollIntoView({ behavior: 'smooth' });
 }
-
-async function handleAuth() {
-  const email = document.getElementById('authEmail').value;
-  const password = document.getElementById('authPassword').value;
-
-  if (isLoginMode) {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      alert('Login fehlgeschlagen: ' + error.message);
-    } else {
-      alert('Login erfolgreich');
-      closeLoginModal();
-      showAddEventModal();
-    }
-  } else {
-    const { error } = await supabase.auth.signUp({ email, password });
-    if (error) {
-      alert('Registrierung fehlgeschlagen: ' + error.message);
-    } else {
-      alert('Registrierung erfolgreich! Bitte überprüfe deine E-Mails zur Bestätigung.');
-      toggleAuthMode();
-    }
-  }
-}
-
-function showAddEventModal() {
-  document.getElementById('addEventOverlay').classList.remove('hidden');
-}
-
-function closeAddEventModal() {
-  document.getElementById('addEventOverlay').classList.add('hidden');
-}
-
-async function submitEvent() {
-  const title = document.getElementById('eventTitle').value.trim();
-  const description = document.getElementById('eventDescription').value.trim();
-  const category = document.getElementById('eventCategory').value;
-  const address = document.getElementById('eventAddress').value.trim();
-
-  if (!title || !address) {
-    alert('Bitte Titel und Adresse eingeben.');
-    return;
-  }
-
-  try {
-    // Geocode-Adresse zu Koordinaten mit Nominatim
-    const res = await fetch(
-      `https://nominatim
