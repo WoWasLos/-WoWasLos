@@ -3,11 +3,11 @@ body, html {
   padding: 0;
   height: 100%;
   font-family: Arial, sans-serif;
-  background-color: #f5f0e6;
+  background-color: #f5f5dc; /* Beige */
 }
 
 header {
-  background-color: #8b735b;
+  background-color: #4a4a4a;
   color: white;
   display: flex;
   align-items: center;
@@ -29,7 +29,7 @@ header h1 {
 nav button {
   margin-left: 10px;
   padding: 8px 12px;
-  background-color: #b59d79;
+  background-color: #888;
   color: white;
   border: none;
   cursor: pointer;
@@ -42,7 +42,7 @@ main {
 
 .sidebar {
   width: 300px;
-  background-color: #fff7e6;
+  background-color: #fdf6e3; /* Helles Beige */
   padding: 20px;
   overflow-y: auto;
 }
@@ -76,6 +76,10 @@ main {
   width: 300px;
   position: relative;
   border-radius: 8px;
+}
+
+.wide-modal {
+  width: 500px;
 }
 
 .close {
