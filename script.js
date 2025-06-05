@@ -2,7 +2,6 @@ const supabaseUrl = 'https://bddofzmczzoiyausrdzb.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJkZG9mem1jenpvaXlhdXNyZHpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwMDQwMTIsImV4cCI6MjA2MzU4MDAxMn0.-MISfzyKIP3zUbJl5vOZDlUAGQXBqntbc9r_sG2zsJI';
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-
 let map;
 let markers = [];
 
@@ -50,7 +49,7 @@ function updateEventList(events) {
 
 function filterEvents() {
   const category = document.getElementById('categoryFilter').value;
-  const ort = document.getElementById('ortFilter').value.toLowerCase();
+  const ort = document.getElementById('locationFilter').value.toLowerCase();
 
   supabase.from('events').select('*').then(({ data, error }) => {
     if (error) return console.error(error);
