@@ -1,64 +1,53 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Veranstaltungen im Schwarzwald</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Schwarzwald Events</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" type="image/png" href="dein-logo.png">
+  <script defer src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script defer src="script.js"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 </head>
 <body>
   <header>
-    <div class="logo">🎉 Schwarzwald Events</div>
+    <img src="dein-logo.png" alt="Logo" id="logo">
+    <h1>Schwarzwald Events</h1>
     <nav>
-      <button id="find-btn">Veranstaltung finden</button>
-      <button id="add-event-btn">Veranstaltung hinzufügen</button>
+      <button onclick="scrollToEvents()">Veranstaltung finden</button>
+      <button onclick="handleAddEventClick()">Veranstaltung hinzufügen</button>
     </nav>
   </header>
 
-  <div id="container">
-    <aside id="sidebar">
+  <main>
+    <section class="sidebar">
       <h2>Veranstaltungen</h2>
-      <label for="category-filter">Kategorie:</label>
-      <select id="category-filter">
-        <option value="">Alle</option>
+      <label for="categoryFilter">Kategorie:</label>
+      <select id="categoryFilter" onchange="filterEvents()">
+        <option value="Alle">Alle</option>
         <option value="Konzert">Konzert</option>
+        <option value="Festival">Festival</option>
         <option value="Markt">Markt</option>
-        <option value="Theater">Theater</option>
       </select>
-      <div id="events-list"></div>
-    </aside>
+      <ul id="eventList"></ul>
+    </section>
 
-    <main id="map"></main>
-  </div>
+    <section class="map-container">
+      <div id="map"></div>
+    </section>
+  </main>
 
-  <!-- Modal -->
-  <div id="modal" class="hidden">
+  <!-- Login modal -->
+  <div id="loginModal" class="modal hidden">
     <div class="modal-content">
-      <span id="close-modal">&times;</span>
-
-      <div id="auth" class="hidden">
-        <h3>Login</h3>
-        <input type="email" id="email" placeholder="E-Mail" />
-        <input type="password" id="password" placeholder="Passwort" />
-        <button id="login-btn">Login</button>
-      </div>
-
-      <form id="event-form" class="hidden">
-        <h3>Neue Veranstaltung</h3>
-        <input type="text" id="name" placeholder="Name" required />
-        <input type="text" id="description" placeholder="Beschreibung" required />
-        <input type="text" id="location" placeholder="Ort" required />
-        <input type="date" id="date" required />
-        <input type="text" id="category" placeholder="Kategorie" required />
-        <input type="file" id="flyer" />
-        <button type="submit">Hinzufügen</button>
-      </form>
+      <span class="close" onclick="closeLoginModal()">&times;</span>
+      <h2>Login</h2>
+      <input type="email" id="loginEmail" placeholder="E-Mail">
+      <input type="password" id="loginPassword" placeholder="Passwort">
+      <button onclick="login()">Login</button>
     </div>
   </div>
-
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-  <script src="script.js"></script>
 </body>
 </html>
