@@ -25,7 +25,7 @@
     <section class="sidebar">
       <h2>Veranstaltungen</h2>
       <label for="locationFilter">Ort:</label>
-      <input type="text" id="locationFilter" placeholder="z. B. Freiburg" oninput="filterEventsByLocation()" />
+      <input type="text" id="locationFilter" placeholder="z. B. Freiburg" oninput="filterEvents()" />
       
       <label for="categoryFilter">Kategorie:</label>
       <select id="categoryFilter" onchange="filterEvents()">
@@ -43,14 +43,14 @@
   </main>
 
   <!-- Login/Register Modal -->
-  <div id="loginModal" class="modal hidden">
+  <div id="authModal" class="modal hidden">
     <div class="modal-content">
-      <span class="close" onclick="closeLoginModal()">&times;</span>
+      <span class="close" onclick="closeAuthModal()">&times;</span>
       <h2>Login oder Registrieren</h2>
-      <input type="email" id="loginEmail" placeholder="E-Mail" />
-      <input type="password" id="loginPassword" placeholder="Passwort" />
+      <input type="email" id="authEmail" placeholder="E-Mail" />
+      <input type="password" id="authPassword" placeholder="Passwort" />
       <button onclick="login()">Login</button>
-      <button onclick="register()">Registrieren</button>
+      <button onclick="signup()">Registrieren</button>
     </div>
   </div>
 
