@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>WoWasLos - Veranstaltungen finden</title>
+  <title>WoWasLos</title>
   <link rel="stylesheet" href="style.css" />
+  <link rel="icon" type="image/png" href="logo.jpg" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <script defer src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
@@ -16,30 +17,30 @@
     <h1>WoWasLos</h1>
     <nav>
       <button onclick="scrollToEvents()">Veranstaltung finden</button>
-      <button onclick="goToAddEvent()">Veranstaltung hinzufügen</button>
+      <button id="btnAddEvent">Veranstaltung hinzufügen</button>
+      <button id="btnLogout" class="hidden">Logout</button>
     </nav>
   </header>
 
   <main>
     <section class="sidebar">
-      <h2>Veranstaltungen</h2>
-
-      <label for="locationFilter">Ort:</label>
+      <h2>Veranstaltungen filtern</h2>
+      <label for="locationFilter">Ort:</label><br />
       <input type="text" id="locationFilter" placeholder="z. B. Freiburg" />
-
-      <label for="categoryFilter">Kategorie:</label>
+      
+      <label for="categoryFilter">Kategorie:</label><br />
       <select id="categoryFilter">
         <option value="Alle">Alle</option>
         <option value="Konzert">Konzert</option>
         <option value="Festival">Festival</option>
         <option value="Markt">Markt</option>
       </select>
-
-      <label for="radiusFilter">Umkreis (km):</label>
-      <input type="number" id="radiusFilter" placeholder="z. B. 10" />
-
-      <button id="filterBtn">Filtern</button>
-
+      
+      <label for="radiusFilter">Umkreis (km):</label><br />
+      <input type="number" id="radiusFilter" placeholder="z.B. 10" min="0" />
+      
+      <button id="btnFilter">Filtern</button>
+      
       <ul id="eventList"></ul>
     </section>
 
@@ -47,5 +48,34 @@
       <div id="map"></div>
     </section>
   </main>
+
+  <!-- Login/Register Modal -->
+  <div id="loginModal" class="modal hidden">
+    <div class="modal-content">
+      <span class="close" id="loginClose">&times;</span>
+      <h2>Login oder Registrieren</h2>
+      <input type="email" id="authEmail" placeholder="E-Mail" />
+      <input type="password" id="authPassword" placeholder="Passwort" />
+      <button id="btnLogin">Login</button>
+      <button id="btnRegister">Registrieren</button>
+    </div>
+  </div>
+
+  <!-- Add Event Modal -->
+  <div id="addEventModal" class="modal hidden">
+    <div class="modal-content wide-modal">
+      <span class="close" id="addEventClose">&times;</span>
+      <h2>Veranstaltung hinzufügen</h2>
+      <input type="text" id="eventTitle" placeholder="Titel" />
+      <textarea id="eventDescription" placeholder="Beschreibung"></textarea>
+      <select id="eventCategory">
+        <option value="Konzert">Konzert</option>
+        <option value="Festival">Festival</option>
+        <option value="Markt">Markt</option>
+      </select>
+      <input type="text" id="eventAddress" placeholder="Adresse (z. B. Musterstraße 1, Freiburg)" />
+      <button id="btnSubmitEvent">Hinzufügen</button>
+    </div>
+  </div>
 </body>
 </html>
