@@ -49,5 +49,23 @@
       <button onclick="login()">Login</button>
     </div>
   </div>
+
+  <!-- Add Event modal -->
+  <div id="addEventModal" class="modal hidden">
+    <div class="modal-content">
+      <span class="close" onclick="closeAddEventModal()">&times;</span>
+      <h2>Veranstaltung hinzufügen</h2>
+      <input type="text" id="eventTitle" placeholder="Titel" />
+      <input type="text" id="eventDescription" placeholder="Beschreibung" />
+      <select id="eventCategory">
+        <option value="Konzert">Konzert</option>
+        <option value="Festival">Festival</option>
+        <option value="Markt">Markt</option>
+      </select>
+      <input type="number" step="any" id="eventLat" placeholder="Breitengrad (lat)" />
+      <input type="number" step="any" id="eventLng" placeholder="Längengrad (lng)" />
+      <button onclick="submitEvent()">Hinzufügen</button>
+    </div>
+  </div>
 </body>
 </html>
