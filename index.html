@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>WoWasLos</title>
   <link rel="stylesheet" href="style.css" />
   <link rel="icon" type="image/png" href="logo.jpg" />
@@ -26,28 +26,9 @@
       <h2>Veranstaltungen</h2>
       <label for="locationFilter">Ort:</label>
       <input type="text" id="locationFilter" placeholder="z. B. Freiburg" />
-      
+
       <label for="categoryFilter">Kategorie:</label>
       <select id="categoryFilter">
-        <option value="">Alle</option>
+        <option value="Alle">Alle</option>
         <option value="Konzert">Konzert</option>
-        <option value="Festival">Festival</option>
-        <option value="Markt">Markt</option>
-      </select>
-
-      <label for="distanceFilter">Umkreis (km):</label>
-      <input type="number" id="distanceFilter" min="0" placeholder="z. B. 10" />
-
-      <button onclick="filterEvents()">Filtern</button>
-
-      <ul id="eventList"></ul>
-    </section>
-
-    <section class="map-container">
-      <div id="map"></div>
-    </section>
-  </main>
-
-  <!-- Auth Modal -->
-  <div id="authModal" class="modal hidden">
-    <div class="modal-conte
+        <option value="Fest
