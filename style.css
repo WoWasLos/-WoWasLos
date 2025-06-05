@@ -16,13 +16,13 @@ header {
 
 #logo {
   height: 40px;
-  margin-right: 10px;
 }
 
 header h1 {
-  flex: 1;
   margin: 0;
   font-size: 1.5em;
+  flex: 1;
+  text-align: center;
 }
 
 nav button {
@@ -44,14 +44,6 @@ main {
   background-color: #f4f4f4;
   padding: 20px;
   overflow-y: auto;
-}
-
-.sidebar input,
-.sidebar select {
-  display: block;
-  width: 100%;
-  margin-bottom: 15px;
-  padding: 6px;
 }
 
 .map-container {
@@ -81,12 +73,8 @@ main {
   background: white;
   padding: 20px;
   width: 300px;
-  position: relative;
   border-radius: 8px;
-}
-
-.wide-modal {
-  width: 500px;
+  position: relative;
 }
 
 .close {
