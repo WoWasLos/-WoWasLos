@@ -77,7 +77,7 @@ main {
   border-radius: 8px;
 }
 
-.modal-content.large {
+.modal-content.wide-modal {
   width: 500px;
   height: auto;
 }
