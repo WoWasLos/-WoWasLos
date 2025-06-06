@@ -3,7 +3,7 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 // Supabase-Setup
-const supabase = supabase.createClient('https://dein-projekt.supabase.co', 'public-anon-key');
+const supabase = supabase.createClient('https://bddofzmczzoiyausrdzb.supabase.co', 'public-anon-key');
 
 // Karte initialisieren
 const map = L.map('map').setView([48.5, 9.0], 7); // Süddeutschland
