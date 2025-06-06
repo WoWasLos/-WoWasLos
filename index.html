@@ -1,99 +1,280 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>WoWasLos</title>
-  <link rel="icon" type="image/png" href="logo.jpg" />
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet/dist/leaflet.css" 
-  />
-  <link rel="stylesheet" href="style.css" />
-  <script defer src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-  <script defer src="script.js"></script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>WoWasLos</title>
+<link rel="icon" type="image/png" href="logo.jpg" />
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-color: beige;
+  }
+  header {
+    background-color: #d6c7a1;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+  }
+  #logo {
+    height: 40px;
+    margin-right: 10px;
+  }
+  nav button {
+    margin-left: 10px;
+    padding: 8px 12px;
+    cursor: pointer;
+  }
+  main {
+    display: flex;
+    flex-grow: 1;
+    overflow: hidden;
+  }
+  .sidebar {
+    width: 320px;
+    padding: 20px;
+    overflow-y: auto;
+    background-color: #f7f2df;
+  }
+  .sidebar label {
+    font-weight: bold;
+    margin-top: 10px;
+    display: block;
+  }
+  .sidebar input, .sidebar select {
+    width: 100%;
+    padding: 6px;
+    margin-top: 4px;
+    margin-bottom: 10px;
+    box-sizing: border-box;
+  }
+  .sidebar button {
+    width: 100%;
+    background-color: #9a865d;
+    border: none;
+    color: white;
+    padding: 10px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  .sidebar ul {
+    list-style: none;
+    padding: 0;
+    max-height: 300px;
+    overflow-y: auto;
+    margin-top: 15px;
+  }
+  .sidebar ul li {
+    padding: 8px;
+    cursor: pointer;
+    border-bottom: 1px solid #ccc;
+  }
+  .sidebar ul li:hover {
+    background-color: #e1d6b3;
+  }
+  .map-container {
+    flex-grow: 1;
+  }
+  #map {
+    height: 100%;
+    width: 100%;
+  }
+</style>
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet/dist/leaflet.css"
+/>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 </head>
 <body>
-  <header>
-    <img src="logo.jpg" alt="Logo" id="logo" />
-    <h1>WoWasLos</h1>
-    <nav>
-      <button onclick="scrollToEvents()">Veranstaltung finden</button>
-      <button onclick="handleAddEventClick()">Veranstaltung hinzufügen</button>
-    </nav>
-  </header>
+<header>
+  <img src="logo.jpg" alt="Logo" id="logo" />
+  <h1>WoWasLos</h1>
+  <nav>
+    <button onclick="scrollToEvents()">Veranstaltung finden</button>
+    <button onclick="window.location.href='login.html'">Veranstaltung hinzufügen</button>
+  </nav>
+</header>
 
-  <main>
-    <section class="sidebar">
-      <h2>Veranstaltungen filtern</h2>
+<main>
+  <section class="sidebar">
+    <h2>Veranstaltungen filtern</h2>
 
-      <label for="locationFilter">Ort:</label><br />
-      <input
-        type="text"
-        id="locationFilter"
-        placeholder="z. B. Freiburg"
-        oninput="filterEvents()"
-      />
+    <label for="locationFilter">Ort:</label>
+    <input
+      type="text"
+      id="locationFilter"
+      placeholder="z. B. Freiburg"
+      oninput="filterEvents()"
+    />
 
-      <label for="categoryFilter">Kategorie:</label><br />
-      <select id="categoryFilter" onchange="filterEvents()">
-        <option value="Alle">Alle</option>
-        <option value="Konzert">Konzert</option>
-        <option value="Festival">Festival</option>
-        <option value="Markt">Markt</option>
-      </select>
+    <label for="categoryFilter">Kategorie:</label>
+    <select id="categoryFilter" onchange="filterEvents()">
+      <option value="Alle">Alle</option>
+      <option value="Konzert">Konzert</option>
+      <option value="Festival">Festival</option>
+      <option value="Markt">Markt</option>
+    </select>
 
-      <label for="radiusFilter">Umkreis (km):</label><br />
-      <input
-        type="number"
-        id="radiusFilter"
-        placeholder="z. B. 10"
-        min="0"
-        oninput="filterEvents()"
-      />
+    <label for="radiusFilter">Umkreis (km):</label>
+    <input
+      type="number"
+      id="radiusFilter"
+      placeholder="z. B. 10"
+      min="0"
+      oninput="filterEvents()"
+    />
 
-      <button onclick="filterEvents()">Filtern</button>
+    <button onclick="filterEvents()">Filtern</button>
 
-      <ul id="eventList"></ul>
-    </section>
+    <ul id="eventList"></ul>
+  </section>
 
-    <section class="map-container">
-      <div id="map"></div>
-    </section>
-  </main>
+  <section class="map-container">
+    <div id="map"></div>
+  </section>
+</main>
 
-  <!-- Login Modal -->
-  <div id="loginModal" class="modal hidden">
-    <div class="modal-content">
-      <span class="close" onclick="closeLoginModal()">&times;</span>
-      <h2>Login oder Registrieren</h2>
-      <input type="email" id="authEmail" placeholder="E-Mail" />
-      <input type="password" id="authPassword" placeholder="Passwort" />
-      <button onclick="login()">Login</button>
-      <button onclick="signup()">Registrieren</button>
-    </div>
-  </div>
+<script>
+  // Supabase config
+  const supabaseUrl = 'https://bddofzmczzoiyausrdzb.supabase.co';
+  const supabaseKey = 'your-supabase-key-here'; // Ersetze durch deinen Supabase-Anon-Key
+  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-  <!-- Add Event Modal -->
-  <div id="addEventModal" class="modal hidden">
-    <div class="modal-content wide-modal">
-      <span class="close" onclick="closeAddEventModal()">&times;</span>
-      <h2>Veranstaltung hinzufügen</h2>
-      <input type="text" id="eventTitle" placeholder="Titel" />
-      <input type="text" id="eventDescription" placeholder="Beschreibung" />
-      <select id="eventCategory">
-        <option value="Konzert">Konzert</option>
-        <option value="Festival">Festival</option>
-        <option value="Markt">Markt</option>
-      </select>
-      <input
-        type="text"
-        id="eventAddress"
-        placeholder="Adresse (z. B. Musterstraße 1, Freiburg)"
-      />
-      <button onclick="submitEvent()">Hinzufügen</button>
-    </div>
-  </div>
+  let map;
+  let markers = [];
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    initMap();
+    await loadEvents();
+  });
+
+  function initMap() {
+    map = L.map('map').setView([48.1, 8.2], 10);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+    }).addTo(map);
+
+    // Begrenze auf Süddeutschland
+    map.setMaxBounds(
+      L.latLngBounds(L.latLng(47.5, 7.5), L.latLng(49.0, 9.5))
+    );
+  }
+
+  async function loadEvents() {
+    const { data, error } = await supabase.from('events').select('*');
+    if (error) {
+      console.error('Fehler beim Laden der Events:', error);
+      return;
+    }
+    updateEventList(data);
+  }
+
+  function updateEventList(events) {
+    const list = document.getElementById('eventList');
+    list.innerHTML = '';
+    markers.forEach((m) => map.removeLayer(m));
+    markers = [];
+
+    events.forEach((event) => {
+      const li = document.createElement('li');
+      li.textContent = `${event.titel} (${event.kategorie}) - ${event.ort}`;
+      li.onclick = () => {
+        if (event.lat && event.lng) {
+          map.setView([event.lat, event.lng], 14);
+        }
+      };
+      list.appendChild(li);
+
+      if (event.lat && event.lng) {
+        const marker = L.marker([event.lat, event.lng])
+          .addTo(map)
+          .bindPopup(`<strong>${event.titel}</strong><br>${event.beschreibung}`);
+        markers.push(marker);
+      }
+    });
+  }
+
+  async function filterEvents() {
+    const category = document.getElementById('categoryFilter').value;
+    const locationInput = document.getElementById('locationFilter').value.trim().toLowerCase();
+    const radiusInput = parseFloat(document.getElementById('radiusFilter').value);
+
+    const { data: events, error } = await supabase.from('events').select('*');
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    let filtered = events;
+
+    if (category !== 'Alle') {
+      filtered = filtered.filter((e) => e.kategorie === category);
+    }
+
+    if (locationInput) {
+      filtered = filtered.filter(
+        (e) => e.ort && e.ort.toLowerCase().includes(locationInput)
+      );
+    }
+
+    // Umkreisfilter (Radius) funktioniert nur, wenn Events lat/lng haben und Ort eingegeben wurde
+    if (locationInput && !isNaN(radiusInput)) {
+      const coords = await geocode(locationInput);
+      if (coords) {
+        filtered = filtered.filter((e) => {
+          if (!e.lat || !e.lng) return false;
+          const dist = getDistanceFromLatLonInKm(coords.lat, coords.lon, e.lat, e.lng);
+          return dist <= radiusInput;
+        });
+      }
+    }
+
+    updateEventList(filtered);
+  }
+
+  async function geocode(query) {
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`
+      );
+      const data = await res.json();
+      if (data && data.length > 0) {
+        return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
+      }
+    } catch (e) {
+      console.error('Geocode-Fehler:', e);
+    }
+    return null;
+  }
+
+  function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
+    const R = 6371;
+    const dLat = deg2rad(lat2 - lat1);
+    const dLon = deg2rad(lon2 - lon1);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(deg2rad(lat1)) *
+        Math.cos(deg2rad(lat2)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  }
+
+  function deg2rad(deg) {
+    return deg * (Math.PI / 180);
+  }
+
+  function scrollToEvents() {
+    document.querySelector('.sidebar').scrollIntoView({ behavior: 'smooth' });
+  }
+</script>
 </body>
 </html>
