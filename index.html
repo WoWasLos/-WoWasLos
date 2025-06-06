@@ -2,66 +2,13 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>WoWasLos</title>
-  <link rel="icon" type="image/png" href="logo.jpg" />
+  <title>WoWasLos Startseite</title>
   <link rel="stylesheet" href="style.css" />
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet/dist/leaflet.css"
-  />
 </head>
 <body>
-  <header>
-    <img src="logo.jpg" alt="Logo" id="logo" />
-    <h1>WoWasLos</h1>
-    <nav>
-      <button id="btn-find-events">Veranstaltung finden</button>
-      <button id="btn-add-event">Veranstaltung hinzufügen</button>
-    </nav>
-  </header>
+  <h1>WoWasLos</h1>
+  <button id="btn-add-event">Veranstaltung hinzufügen</button>
 
-  <main>
-    <section class="sidebar">
-      <h2>Veranstaltungen filtern</h2>
-
-      <label for="locationFilter">Ort:</label>
-      <input
-        type="text"
-        id="locationFilter"
-        placeholder="z. B. Freiburg"
-      />
-
-      <label for="categoryFilter">Kategorie:</label>
-      <select id="categoryFilter">
-        <option value="Alle">Alle</option>
-        <option value="Konzert">Konzert</option>
-        <option value="Festival">Festival</option>
-        <option value="Markt">Markt</option>
-      </select>
-
-      <label for="radiusFilter">Umkreis (km):</label>
-      <input
-        type="number"
-        id="radiusFilter"
-        placeholder="z. B. 10"
-        min="0"
-      />
-
-      <button id="btn-filter">Filtern</button>
-
-      <ul id="eventList"></ul>
-    </section>
-
-    <section class="map-container">
-      <div id="map"></div>
-    </section>
-  </main>
-
-  <script
-    src="https://unpkg.com/leaflet/dist/leaflet.js"
-  ></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <script src="script.js"></script>
 </body>
 </html>
