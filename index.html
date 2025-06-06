@@ -1,14 +1,62 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <title>WoWasLos Startseite</title>
-  <link rel="stylesheet" href="style.css" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>WoWasLos - Veranstaltungen</title>
+<link rel="stylesheet" href="style.css" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/supabase.min.js"></script>
 </head>
 <body>
+<header>
   <h1>WoWasLos</h1>
   <button id="btn-add-event">Veranstaltung hinzufügen</button>
+  <button id="btn-logout" style="display:none;">Logout</button>
+</header>
 
-  <script src="script.js"></script>
+<!-- Modale -->
+<div id="login-modal" class="modal" style="display:none;">
+  <div class="modal-content">
+    <h2>Login</h2>
+    <form id="login-form">
+      <label>Email:<br /><input type="email" id="email" name="email" required /></label><br />
+      <label>Passwort:<br /><input type="password" id="password" name="password" required /></label><br />
+      <button type="submit">Einloggen</button>
+    </form>
+    <button class="close-btn" id="login-close">Schließen</button>
+  </div>
+</div>
+
+<div id="add-event-modal" class="modal" style="display:none;">
+  <div class="modal-content">
+    <h2>Veranstaltung hinzufügen</h2>
+    <form id="event-form">
+      <label>Titel:<br /><input type="text" id="title" name="title" required /></label><br />
+      <label>Beschreibung:<br /><textarea id="description" name="description"></textarea></label><br />
+      <label>Ort:<br /><input type="text" id="location" name="location" required /></label><br />
+      <label>Kategorie:<br />
+        <select id="category" name="category" required>
+          <option value="">-- bitte wählen --</option>
+          <option value="Musik">Musik</option>
+          <option value="Kultur">Kultur</option>
+          <option value="Sport">Sport</option>
+          <option value="Familie">Familie</option>
+          <option value="Festival">Festival</option>
+        </select>
+      </label><br />
+      <label>Datum:<br /><input type="date" id="date" name="date" required /></label><br />
+      <button type="submit">Speichern</button>
+    </form>
+    <button class="close-btn" id="event-close">Schließen</button>
+  </div>
+</div>
+
+<main>
+  <div id="events-list">
+    <!-- Veranstaltungen werden hier geladen -->
+  </div>
+</main>
+
+<script src="script.js"></script>
 </body>
 </html>
