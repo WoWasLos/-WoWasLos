@@ -1,62 +1,99 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>WoWasLos - Veranstaltungen</title>
-<link rel="stylesheet" href="style.css" />
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/supabase.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WoWasLos</title>
+  <link rel="icon" type="image/png" href="logo.jpg" />
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet/dist/leaflet.css" 
+  />
+  <link rel="stylesheet" href="style.css" />
+  <script defer src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script defer src="script.js"></script>
 </head>
 <body>
-<header>
-  <h1>WoWasLos</h1>
-  <button id="btn-add-event">Veranstaltung hinzufügen</button>
-  <button id="btn-logout" style="display:none;">Logout</button>
-</header>
+  <header>
+    <img src="logo.jpg" alt="Logo" id="logo" />
+    <h1>WoWasLos</h1>
+    <nav>
+      <button onclick="scrollToEvents()">Veranstaltung finden</button>
+      <button onclick="handleAddEventClick()">Veranstaltung hinzufügen</button>
+    </nav>
+  </header>
 
-<!-- Modale -->
-<div id="login-modal" class="modal" style="display:none;">
-  <div class="modal-content">
-    <h2>Login</h2>
-    <form id="login-form">
-      <label>Email:<br /><input type="email" id="email" name="email" required /></label><br />
-      <label>Passwort:<br /><input type="password" id="password" name="password" required /></label><br />
-      <button type="submit">Einloggen</button>
-    </form>
-    <button class="close-btn" id="login-close">Schließen</button>
+  <main>
+    <section class="sidebar">
+      <h2>Veranstaltungen filtern</h2>
+
+      <label for="locationFilter">Ort:</label><br />
+      <input
+        type="text"
+        id="locationFilter"
+        placeholder="z. B. Freiburg"
+        oninput="filterEvents()"
+      />
+
+      <label for="categoryFilter">Kategorie:</label><br />
+      <select id="categoryFilter" onchange="filterEvents()">
+        <option value="Alle">Alle</option>
+        <option value="Konzert">Konzert</option>
+        <option value="Festival">Festival</option>
+        <option value="Markt">Markt</option>
+      </select>
+
+      <label for="radiusFilter">Umkreis (km):</label><br />
+      <input
+        type="number"
+        id="radiusFilter"
+        placeholder="z. B. 10"
+        min="0"
+        oninput="filterEvents()"
+      />
+
+      <button onclick="filterEvents()">Filtern</button>
+
+      <ul id="eventList"></ul>
+    </section>
+
+    <section class="map-container">
+      <div id="map"></div>
+    </section>
+  </main>
+
+  <!-- Login Modal -->
+  <div id="loginModal" class="modal hidden">
+    <div class="modal-content">
+      <span class="close" onclick="closeLoginModal()">&times;</span>
+      <h2>Login oder Registrieren</h2>
+      <input type="email" id="authEmail" placeholder="E-Mail" />
+      <input type="password" id="authPassword" placeholder="Passwort" />
+      <button onclick="login()">Login</button>
+      <button onclick="signup()">Registrieren</button>
+    </div>
   </div>
-</div>
 
-<div id="add-event-modal" class="modal" style="display:none;">
-  <div class="modal-content">
-    <h2>Veranstaltung hinzufügen</h2>
-    <form id="event-form">
-      <label>Titel:<br /><input type="text" id="title" name="title" required /></label><br />
-      <label>Beschreibung:<br /><textarea id="description" name="description"></textarea></label><br />
-      <label>Ort:<br /><input type="text" id="location" name="location" required /></label><br />
-      <label>Kategorie:<br />
-        <select id="category" name="category" required>
-          <option value="">-- bitte wählen --</option>
-          <option value="Musik">Musik</option>
-          <option value="Kultur">Kultur</option>
-          <option value="Sport">Sport</option>
-          <option value="Familie">Familie</option>
-          <option value="Festival">Festival</option>
-        </select>
-      </label><br />
-      <label>Datum:<br /><input type="date" id="date" name="date" required /></label><br />
-      <button type="submit">Speichern</button>
-    </form>
-    <button class="close-btn" id="event-close">Schließen</button>
+  <!-- Add Event Modal -->
+  <div id="addEventModal" class="modal hidden">
+    <div class="modal-content wide-modal">
+      <span class="close" onclick="closeAddEventModal()">&times;</span>
+      <h2>Veranstaltung hinzufügen</h2>
+      <input type="text" id="eventTitle" placeholder="Titel" />
+      <input type="text" id="eventDescription" placeholder="Beschreibung" />
+      <select id="eventCategory">
+        <option value="Konzert">Konzert</option>
+        <option value="Festival">Festival</option>
+        <option value="Markt">Markt</option>
+      </select>
+      <input
+        type="text"
+        id="eventAddress"
+        placeholder="Adresse (z. B. Musterstraße 1, Freiburg)"
+      />
+      <button onclick="submitEvent()">Hinzufügen</button>
+    </div>
   </div>
-</div>
-
-<main>
-  <div id="events-list">
-    <!-- Veranstaltungen werden hier geladen -->
-  </div>
-</main>
-
-<script src="script.js"></script>
 </body>
 </html>
