@@ -2,7 +2,6 @@ const supabaseUrl = 'https://bddofzmczzoiyausrdzb.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJkZG9mem1jenpvaXlhdXNyZHpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwMDQwMTIsImV4cCI6MjA2MzU4MDAxMn0.-MISfzyKIP3zUbJl5vOZDlUAGQXBqntbc9r_sG2zsJI';
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-
 let map, markers = [], radiusCircle;
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -123,7 +122,7 @@ async function login() {
   const pw = document.getElementById('authPassword').value;
   const { data:{user}, error } = await supabase.auth.signInWithPassword({ email, password: pw });
   if (error) return alert('Login fehlgeschlagen: '+error.message);
-  alert('Login OK! Du kannst nun ein Fest hinzufügen.');
+  alert('Login OK! Du kannst nun eine Veranstaltung hinzufügen.');
   closeLoginModal();
   openAddEventModal();
 }
@@ -146,29 +145,37 @@ async function submitEvent() {
   const c = document.getElementById('eventCategory').value;
   const addr = document.getElementById('eventAddress').value.trim();
   const file = document.getElementById('eventImage').files[0];
-  if (!t||!b||!addr||!file) return alert('Alle Felder + Bild sind Pflicht.');
+  if (!t||!b||!addr||!file) return alert('Bitte alle Felder ausfüllen und ein Bild hochladen.');
 
   const coords = await getCoordinatesFromAddress(addr);
-  if (!coords) return alert('Adresse ungültig.');
+  if (!coords) return alert('Adresse konnte nicht gefunden werden.');
 
-  const fname = Date.now() + '-' + file.name;
-  const { error: upErr } = await supabase.storage.from('flyer').upload(fname, file);
-  if (upErr) return alert('Upload fehlgeschlagen: '+upErr.message);
-  const { data: { publicUrl } } = supabase.storage.from('flyer').getPublicUrl(fname);
+  // Datei hochladen
+  const fileExt = file.name.split('.').pop();
+  const fileName = `${Date.now()}.${fileExt}`;
+  const { data: uploadData, error: uploadError } = await supabase.storage
+    .from('event-flyers')
+    .upload(fileName, file);
+  if (uploadError) return alert('Bildupload fehlgeschlagen: ' + uploadError.message);
 
-  const ort = addr.split(',').pop().trim();
-  const { error } = await supabase.from('events').insert({
-    titel: t, beschreibung: b, kategorie: c, adresse: addr, ort, lat: coords.lat, lng: coords.lng,
-    flyer_url: publicUrl, user_id: user.id
-  });
-  if (error) return alert('Speichern fehlgeschlagen: '+error.message);
+  const flyer_url = supabase.storage.from('event-flyers').getPublicUrl(fileName).data.publicUrl;
 
-  alert('Fest erfolgreich gespeichert!');
+  const { error } = await supabase.from('events').insert([{
+    titel: t,
+    beschreibung: b,
+    kategorie: c,
+    adresse: addr,
+    ort: addr,
+    lat: coords.lat,
+    lng: coords.lng,
+    flyer_url
+  }]);
+  if (error) return alert('Fehler beim Speichern: '+error.message);
+  alert('Veranstaltung wurde hinzugefügt!');
   closeAddEventModal();
-  document.getElementById('eventTitle').value = '';
-  document.getElementById('eventDescription').value = '';
-  document.getElementById('eventCategory').value = 'Konzert';
-  document.getElementById('eventAddress').value = '';
-  document.getElementById('eventImage').value = '';
-  await loadEvents();
+  loadEvents();
+}
+
+function scrollToEvents() {
+  document.getElementById('sidebar').scrollIntoView({ behavior: 'smooth' });
 }
