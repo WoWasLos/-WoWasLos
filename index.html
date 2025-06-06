@@ -16,12 +16,12 @@
     <h1>WoWasLos</h1>
     <nav>
       <button onclick="scrollToEvents()">Veranstaltungen finden</button>
-      <button onclick="handleAddEventClick()">Veranstaltungen hinzufügen</button>
+      <button onclick="handleAddEventClick()">Veranstaltung hinzufügen</button>
     </nav>
   </header>
   <main>
     <section class="sidebar" id="sidebar">
-      <h2>Feste filtern</h2>
+      <h2>Veranstaltungen filtern</h2>
       <label for="locationFilter">Ort:</label>
       <input type="text" id="locationFilter" placeholder="z. B. Freiburg" oninput="filterEvents()" />
       <label for="categoryFilter">Kategorie:</label>
@@ -43,7 +43,7 @@
 
   <!-- Login Modal -->
   <div id="loginModal" class="modal hidden">
-    <div class="modal-content">
+    <div class="modal-content fullscreen-modal">
       <span class="close" onclick="closeLoginModal()">&times;</span>
       <h2>Login / Registrieren</h2>
       <input type="email" id="authEmail" placeholder="E‑Mail" />
@@ -55,9 +55,9 @@
 
   <!-- Add Event Modal -->
   <div id="addEventModal" class="modal hidden">
-    <div class="modal-content wide-modal">
+    <div class="modal-content fullscreen-modal">
       <span class="close" onclick="closeAddEventModal()">&times;</span>
-      <h2>Neues Fest hinzufügen</h2>
+      <h2>Neue Veranstaltung hinzufügen</h2>
       <input type="text" id="eventTitle" placeholder="Titel" />
       <textarea id="eventDescription" placeholder="Beschreibung"></textarea>
       <select id="eventCategory">
