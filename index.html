@@ -4,60 +4,40 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>WoWasLos</title>
-  <link rel="icon" type="image/png" href="logo.jpg" />
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet/dist/leaflet.css" 
-  />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="style.css" />
-  <script defer src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-  <script defer src="script.js"></script>
 </head>
 <body>
   <header>
-    <img src="logo.jpg" alt="Logo" id="logo" />
+    <img id="logo" src="logo.png" alt="Logo" />
     <h1>WoWasLos</h1>
     <nav>
-      <button onclick="scrollToEvents()">Veranstaltung finden</button>
       <button onclick="handleAddEventClick()">Veranstaltung hinzufügen</button>
     </nav>
   </header>
-
   <main>
-    <section class="sidebar">
-      <h2>Veranstaltungen filtern</h2>
-
-      <label for="locationFilter">Ort:</label><br />
-      <input
-        type="text"
-        id="locationFilter"
-        placeholder="z. B. Freiburg"
-        oninput="filterEvents()"
-      />
-
-      <label for="categoryFilter">Kategorie:</label><br />
-      <select id="categoryFilter" onchange="filterEvents()">
-        <option value="Alle">Alle</option>
-        <option value="Konzert">Konzert</option>
-        <option value="Festival">Festival</option>
-        <option value="Markt">Markt</option>
+    <aside class="sidebar">
+      <h2>Filter</h2>
+      <label for="locationFilter">Ort</label>
+      <input type="text" id="locationFilter" placeholder="Ort eingeben" />
+      
+      <label for="categoryFilter">Kategorie</label>
+      <select id="categoryFilter">
+        <option>Alle</option>
+        <option>Musik</option>
+        <option>Sport</option>
+        <option>Party</option>
+        <option>Sonstiges</option>
       </select>
-
-      <label for="radiusFilter">Umkreis (km):</label><br />
-      <input
-        type="number"
-        id="radiusFilter"
-        placeholder="z. B. 10"
-        min="0"
-        oninput="filterEvents()"
-      />
-
-      <button onclick="filterEvents()">Filtern</button>
-
+      
+      <label for="radiusFilter">Umkreis (km)</label>
+      <input type="number" id="radiusFilter" placeholder="Radius eingeben" />
+      
+      <button onclick="filterEvents()">Filter anwenden</button>
+      
       <ul id="eventList"></ul>
-    </section>
-
+    </aside>
+    
     <section class="map-container">
       <div id="map"></div>
     </section>
@@ -67,33 +47,29 @@
   <div id="loginModal" class="modal hidden">
     <div class="modal-content">
       <span class="close" onclick="closeLoginModal()">&times;</span>
-      <h2>Login oder Registrieren</h2>
+      <h3>Login</h3>
       <input type="email" id="authEmail" placeholder="E-Mail" />
       <input type="password" id="authPassword" placeholder="Passwort" />
-      <button onclick="login()">Login</button>
+      <button onclick="login()">Einloggen</button>
       <button onclick="signup()">Registrieren</button>
     </div>
   </div>
 
   <!-- Add Event Modal -->
   <div id="addEventModal" class="modal hidden">
-    <div class="modal-content wide-modal">
+    <div class="modal-content">
       <span class="close" onclick="closeAddEventModal()">&times;</span>
-      <h2>Veranstaltung hinzufügen</h2>
+      <h3>Veranstaltung hinzufügen</h3>
       <input type="text" id="eventTitle" placeholder="Titel" />
-      <input type="text" id="eventDescription" placeholder="Beschreibung" />
-      <select id="eventCategory">
-        <option value="Konzert">Konzert</option>
-        <option value="Festival">Festival</option>
-        <option value="Markt">Markt</option>
-      </select>
-      <input
-        type="text"
-        id="eventAddress"
-        placeholder="Adresse (z. B. Musterstraße 1, Freiburg)"
-      />
-      <button onclick="submitEvent()">Hinzufügen</button>
+      <textarea id="eventDescription" placeholder="Beschreibung"></textarea>
+      <input type="text" id="eventCategory" placeholder="Kategorie" />
+      <input type="text" id="eventAddress" placeholder="Adresse" />
+      <button onclick="submitEvent()">Speichern</button>
     </div>
   </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
