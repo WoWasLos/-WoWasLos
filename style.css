@@ -1,199 +1,230 @@
-body,Add commentMore actions
-html {
-body, html {
+body, html {Add commentMore actions
+/* Reset & Basis */
+* {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
   height: 100%;
   font-family: Arial, sans-serif;
-  background-color: #f5f0e6; /* beige hell */
-  color: #4b3b2b;
-  background-color: #f5f0e6;
+}
+
+body, html {
+  height: 100%;
+  background: #f5f5f5;
+  color: #222;
 }
 
 header {
-  background-color: #a1866f; /* beige braun */
-  background-color: #8b735b;
+  background-color: #111;
+  background: #004080;
   color: white;
   display: flex;
   align-items: center;
-@@ -20,29 +18,21 @@ header {
+  padding: 10px 20px;
+  justify-content: space-between;
+  gap: 20px;
+}
+
 #logo {
   height: 40px;
   margin-right: 10px;
-  border-radius: 6px;
+  width: 40px;
+  object-fit: cover;
+  border-radius: 5px;
 }
 
 header h1 {
   flex: 1;
   margin: 0;
-  font-size: 1.8em;
-  font-weight: 600;
   font-size: 1.5em;
+  flex-grow: 1;
+  font-weight: bold;
 }
 
 nav button {
   margin-left: 10px;
-  padding: 8px 14px;
-  background-color: #6b5531; /* dunkleres beige */
   padding: 8px 12px;
-  background-color: #b59d79;
+  background-color: #444;
   color: white;
+  background: #007acc;
   border: none;
+  color: white;
+  padding: 8px 15px;
   border-radius: 4px;
   cursor: pointer;
   font-weight: 600;
 }
 
 nav button:hover {
-  background-color: #856e42;
+  background: #005f99;
 }
+
+nav button.hidden {
+@@ -40,8 +53,165 @@ nav button.hidden {
 
 main {
-@@ -51,78 +41,10 @@ main {
+  display: flex;
+  height: calc(100vh - 60px);
+  height: calc(100vh - 62px); /* Header Höhe abziehen */
 }
 
+/* Sidebar */
 .sidebar {
+  width: 300px
   width: 320px;
-  background-color: #ede5d3; /* heller beiger Hintergrund */
-  width: 300px;
-  background-color: #fff7e6;
+  background: white;
+  border-right: 1px solid #ddd;
   padding: 20px;
   overflow-y: auto;
-  box-shadow: inset -1px 0 5px rgba(0, 0, 0, 0.1);
-  font-weight: 500;
 }
 
 .sidebar h2 {
-  margin-top: 0;
-  margin-bottom: 10px;
-  font-size: 1.4em;
-  border-bottom: 2px solid #6b5531;
-  padding-bottom: 6px;
+  margin-bottom: 15px;
+  font-weight: 700;
+  font-size: 1.2rem;
 }
 
 .sidebar label {
+  font-weight: 600;
   margin-top: 10px;
   display: block;
-  font-size: 0.9em;
-  color: #5a4b37;
-  font-weight: 600;
+  margin-bottom: 5px;
 }
 
-.sidebar input,
-.sidebar select {
+.sidebar input[type="text"],
+.sidebar input[type="number"],
+.sidebar select,
+.sidebar textarea {
   width: 100%;
-  padding: 6px 8px;
-  margin-top: 4px;
-  border: 1.5px solid #b8a87e;
+  padding: 7px 10px;
+  border: 1px solid #ccc;
   border-radius: 4px;
-  font-size: 1em;
-  color: #4b3b2b;
-  background-color: #fff8e1;
-  box-sizing: border-box;
+  font-size: 0.9rem;
 }
 
 .sidebar button {
-  margin-top: 12px;
+  margin-top: 15px;
   width: 100%;
-  background-color: #6b5531;
+  background: #007acc;
+  border: none;
   color: white;
   padding: 10px 0;
-  border: none;
-  border-radius: 5px;
-  font-weight: 700;
+  border-radius: 4px;
   cursor: pointer;
+  font-weight: 700;
+  font-size: 1rem;
 }
 
 .sidebar button:hover {
-  background-color: #856e42;
+  background: #005f99;
 }
 
-ul#eventList {
-  list-style: none;
-  padding: 0;
+#eventList {
   margin-top: 20px;
-  max-height: 55vh;
+  list-style: none;
+  max-height: 50vh;
   overflow-y: auto;
-  font-weight: 600;
+  padding-right: 5px;
 }
 
-ul#eventList li {
-  margin: 10px 0;
-  border-bottom: 1px solid #b8a87e;
-  padding-bottom: 10px;
+#eventList li {
+  padding: 8px 10px;
+  border-bottom: 1px solid #eee;
   cursor: pointer;
-  color: #4b3b2b;
 }
 
-ul#eventList li:hover {
-  background-color: #d7cfae;
+#eventList li:hover {
+  background-color: #e6f0ff;
 }
 
+/* Map */
 .map-container {
-@@ -133,8 +55,6 @@ ul#eventList li:hover {
-#map {
-  width: 100%;
-  height: 100%;
-  border-left: 2px solid #b8a87e;
-  box-sizing: border-box;
+  flex-grow: 1;
+  position: relative;
 }
 
+#map {
+  height: 100%;
+  width: 100%;
+}
+
+/* Modal allgemein */
 .modal {
-@@ -143,38 +63,39 @@ ul#eventList li:hover {
+  position: fixed;
+  top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(75, 59, 43, 0.6);
-  background: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0,0,0,0.4);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 10000;
   z-index: 1000;
 }
 
-.modal-content {
-  background: #f5f0e6;
-  padding: 25px 30px;
-  width: 320px;
-  background: white;
-  padding: 20px;
-  width: 300px;
-  position: relative;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(107, 85, 49, 0.3);
-  font-weight: 600;
-  color: #4b3b2b;
+.modal.hidden {
+  display: none;
 }
 
-.modal-content.wide-modal {
-  width: 400px;
+.modal-content {
+  background: white;
+  padding: 25px 30px;
   border-radius: 8px;
+  width: 350px;
+  max-width: 90vw;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  position: relative;
+}
+
+.wide-modal {
+  width: 500px;
+}
+
+.modal-content h2 {
+  margin-bottom: 20px;
+}
+
+.modal-content input,
+.modal-content textarea,
+.modal-content select {
+  width: 100%;
+  margin-bottom: 15px;
+  padding: 8px 10px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.modal-content textarea {
+  resize: vertical;
+  min-height: 70px;
+}
+
+.modal-content button {
+  background: #007acc;
+  border: none;
+  color: white;
+  padding: 10px 15px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+}
+
+.modal-content button:hover {
+  background: #005f99;
 }
 
 .close {
   position: absolute;
   right: 15px;
-  top: 10px;
-  right: 10px;
-  top: 5px;
+  top: 12px;
+  font-size: 1.5rem;
   cursor: pointer;
-  font-size: 1.5em;
-  font-weight: 700;
-  color: #6b5531;
+  color: #999;
+  font-weight: bold;
 }
 
-.hidden {
-  display: none;
-}
-
-ul#eventList {
-  list-style: none;
-  padding: 0;
-}
-
-ul#eventList li {
-  margin: 10px 0;
-  border-bottom: 1px solid #ccc;
-  padding-bottom: 10px;
+.close:hover {
+  color: #444;
 }
