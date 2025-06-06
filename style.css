@@ -15,6 +15,7 @@ header {
   align-items: center;
   padding: 10px 20px;
   justify-content: space-between;
+  height: 60px;
 }
 
 #logo {
@@ -76,7 +77,8 @@ main {
 }
 
 .sidebar input,
-.sidebar select {
+.sidebar select,
+.sidebar textarea {
   width: 100%;
   padding: 6px 8px;
   margin-top: 4px;
@@ -86,6 +88,7 @@ main {
   color: #4b3b2b;
   background-color: #fff8e1;
   box-sizing: border-box;
+  resize: vertical;
 }
 
 .sidebar button {
@@ -159,6 +162,8 @@ ul#eventList li:hover {
   box-shadow: 0 4px 12px rgba(107, 85, 49, 0.3);
   font-weight: 600;
   color: #4b3b2b;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 .modal-content.wide-modal {
@@ -178,4 +183,8 @@ ul#eventList li:hover {
 .hidden {
   display: none;
 }
- 
+
+button:focus, input:focus, select:focus, textarea:focus {
+  outline: 2px solid #856e42;
+  outline-offset: 2px;
+}
