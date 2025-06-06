@@ -3,8 +3,7 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 
-let map;
-let markers = [];
+let map, markers = [], radiusCircle;
 
 document.addEventListener('DOMContentLoaded', async () => {
   initMap();
@@ -14,266 +13,162 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 function initMap() {
   map = L.map('map').setView([48.1, 8.2], 10);
-
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors',
+    attribution: '© OpenStreetMap contributors'
   }).addTo(map);
-
-  // Begrenze Karte auf Schwarzwald-Region
-  map.setMaxBounds(L.latLngBounds(L.latLng(47.5, 7.5), L.latLng(49.0, 9.5)));
+  map.setMaxBounds(L.latLngBounds([47.5,7.5],[49.0,9.5]));
 }
 
 async function loadEvents() {
   const { data, error } = await supabase.from('events').select('*');
-  if (error) {
-    console.error('Fehler beim Laden der Events:', error);
-    return;
-  }
-  updateEventList(data);
+  if (error) return console.error(error);
+  displayEvents(data);
 }
 
-function updateEventList(events) {
+function displayEvents(events) {
   const list = document.getElementById('eventList');
   list.innerHTML = '';
-  // Marker entfernen
-  markers.forEach((m) => map.removeLayer(m));
+  markers.forEach(m => map.removeLayer(m));
   markers = [];
 
-  events.forEach((event) => {
+  events.forEach(e => {
     const li = document.createElement('li');
-    li.textContent = `${event.titel} (${event.kategorie}) - ${event.ort}`;
-    li.onclick = () => {
-      if (event.lat && event.lng) {
-        map.setView([event.lat, event.lng], 14);
-      }
-    };
+    li.textContent = `${e.titel} (${e.kategorie}) – ${e.ort}`;
+    li.onclick = () => e.lat && e.lng && map.setView([e.lat,e.lng], 14);
     list.appendChild(li);
 
-    if (event.lat && event.lng) {
-      const marker = L.marker([event.lat, event.lng])
+    if (e.lat && e.lng) {
+      const m = L.marker([e.lat,e.lng])
         .addTo(map)
-        .bindPopup(`<strong>${event.titel}</strong><br>${event.beschreibung}`);
-      markers.push(marker);
+        .bindPopup(`<strong>${e.titel}</strong><br>${e.beschreibung}` +
+          (e.flyer_url ? `<br><img src="${e.flyer_url}" style="width:100px;">`: ''));
+      markers.push(m);
     }
   });
 }
 
-// Filter Events nach Ort, Kategorie und Umkreis
 async function filterEvents() {
-  const category = document.getElementById('categoryFilter').value;
-  const locationInput = document.getElementById('locationFilter').value.trim().toLowerCase();
-  const radiusInput = parseFloat(document.getElementById('radiusFilter').value);
+  const cat = document.getElementById('categoryFilter').value;
+  const loc = document.getElementById('locationFilter').value.trim();
+  const radius = parseFloat(document.getElementById('radiusFilter').value);
 
   const { data: events, error } = await supabase.from('events').select('*');
-  if (error) {
-    console.error(error);
-    return;
-  }
-
+  if (error) return console.error(error);
   let filtered = events;
 
-  if (category !== 'Alle') {
-    filtered = filtered.filter((e) => e.kategorie === category);
-  }
+  if (cat !== 'Alle') filtered = filtered.filter(e => e.kategorie === cat);
+  if (loc) filtered = filtered.filter(e => e.ort?.toLowerCase().includes(loc.toLowerCase()));
 
-  if (locationInput) {
-    filtered = filtered.filter(
-      (e) => e.ort && e.ort.toLowerCase().includes(locationInput)
-    );
-  }
-
-  if (locationInput && !isNaN(radiusInput) && radiusInput > 0) {
-    const coords = await getCoordinatesFromAddress(locationInput);
+  if (loc && radius > 0) {
+    const coords = await getCoordinatesFromAddress(loc);
     if (coords) {
-      filtered = filtered.filter((e) => {
+      if (radiusCircle) map.removeLayer(radiusCircle);
+      radiusCircle = L.circle([coords.lat,coords.lng], {
+        radius: radius * 1000,
+        color: '#6b5531',
+        fillColor: '#6b5531',
+        fillOpacity: 0.1
+      }).addTo(map);
+      filtered = filtered.filter(e => {
         if (!e.lat || !e.lng) return false;
-        const dist = getDistanceFromLatLonInKm(
-          coords.lat,
-          coords.lng,
-          e.lat,
-          e.lng
-        );
-        return dist <= radiusInput;
+        const d = getDistance(coords.lat, coords.lng, e.lat, e.lng);
+        return d <= radius;
       });
+      map.setView([coords.lat,coords.lng], 12);
     }
+  } else if (radiusCircle) {
+    map.removeLayer(radiusCircle);
   }
 
-  updateEventList(filtered);
+  displayEvents(filtered);
 }
 
-// Entfernung in km zwischen zwei Punkten (Haversine)
-function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
-  const R = 6371; // Erdradius in km
-  const dLat = deg2rad(lat2 - lat1);
-  const dLon = deg2rad(lon2 - lon1);
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(deg2rad(lat1)) *
-      Math.cos(deg2rad(lat2)) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
+function getDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2-lat1)*Math.PI/180;
+  const dLon = (lon2-lon1)*Math.PI/180;
+  const a = Math.sin(dLat/2)**2 + 
+    Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*
+    Math.sin(dLon/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
-function deg2rad(deg) {
-  return deg * (Math.PI / 180);
-}
-
-// Adresse in Koordinaten umwandeln (OpenStreetMap Nominatim API)
-async function getCoordinatesFromAddress(address) {
+async function getCoordinatesFromAddress(adresse) {
   try {
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-        address
-      )}`
-    );
-    const data = await res.json();
-    if (data && data.length > 0) {
-      return {
-        lat: parseFloat(data[0].lat),
-        lng: parseFloat(data[0].lon),
-      };
-    }
-  } catch (err) {
-    console.error('Fehler bei Geokodierung:', err);
-  }
-  return null;
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(adresse)}`);
+    const d = await res.json();
+    return d[0] ? { lat: parseFloat(d[0].lat), lng: parseFloat(d[0].lon) } : null;
+  } catch(e){ console.error(e); return null; }
 }
 
-// Login Modal anzeigen
-function openLoginModal() {
-  document.getElementById('loginModal').classList.remove('hidden');
-}
-
-// Login Modal schließen
-function closeLoginModal() {
-  document.getElementById('loginModal').classList.add('hidden');
-}
-
-// Add Event Modal öffnen
-function openAddEventModal() {
-  document.getElementById('addEventModal').classList.remove('hidden');
-}
-
-// Add Event Modal schließen
-function closeAddEventModal() {
-  document.getElementById('addEventModal').classList.add('hidden');
-}
-
-// Prüfen, ob User angemeldet ist
 async function checkUser() {
-  const user = supabase.auth.user();
-  if (user) {
-    console.log('Angemeldet als', user.email);
-  } else {
-    console.log('Nicht angemeldet');
-  }
+  const { data: { user } } = await supabase.auth.getUser();
   return user;
 }
 
-// Login Funktion
+function handleAddEventClick() {
+  checkUser().then(user => {
+    if (!user) openLoginModal();
+    else openAddEventModal();
+  });
+}
+
+function openLoginModal(){ document.getElementById('loginModal').classList.remove('hidden'); }
+function closeLoginModal(){ document.getElementById('loginModal').classList.add('hidden'); }
+function openAddEventModal(){ document.getElementById('addEventModal').classList.remove('hidden'); }
+function closeAddEventModal(){ document.getElementById('addEventModal').classList.add('hidden'); }
+
 async function login() {
   const email = document.getElementById('authEmail').value;
-  const password = document.getElementById('authPassword').value;
-  const { user, error } = await supabase.auth.signIn({ email, password });
-  if (error) {
-    alert('Login fehlgeschlagen: ' + error.message);
-    return;
-  }
-  alert('Login erfolgreich: ' + user.email);
+  const pw = document.getElementById('authPassword').value;
+  const { data:{user}, error } = await supabase.auth.signInWithPassword({ email, password: pw });
+  if (error) return alert('Login fehlgeschlagen: '+error.message);
+  alert('Login OK! Du kannst nun ein Fest hinzufügen.');
   closeLoginModal();
   openAddEventModal();
 }
 
-// Registrierung Funktion
 async function signup() {
   const email = document.getElementById('authEmail').value;
-  const password = document.getElementById('authPassword').value;
-  const { user, error } = await supabase.auth.signUp({ email, password });
-  if (error) {
-    alert('Registrierung fehlgeschlagen: ' + error.message);
-    return;
-  }
-  alert('Registrierung erfolgreich. Bitte überprüfe deine E-Mails für Verifizierung.');
+  const pw = document.getElementById('authPassword').value;
+  const { data:{user}, error } = await supabase.auth.signUp({ email, password: pw });
+  if (error) return alert('Registrierung fehlgeschlagen:'+error.message);
+  alert('Registrierung OK! Bitte E‑Mail verifizieren.');
   closeLoginModal();
   openAddEventModal();
 }
 
-// Event hinzufügen
 async function submitEvent() {
   const user = await checkUser();
-  if (!user) {
-    alert('Bitte zuerst anmelden.');
-    closeAddEventModal();
-    openLoginModal();
-    return;
-  }
+  if (!user) return alert('Bitte erst einloggen.');
+  const t = document.getElementById('eventTitle').value.trim();
+  const b = document.getElementById('eventDescription').value.trim();
+  const c = document.getElementById('eventCategory').value;
+  const addr = document.getElementById('eventAddress').value.trim();
+  const file = document.getElementById('eventImage').files[0];
+  if (!t||!b||!addr||!file) return alert('Alle Felder + Bild sind Pflicht.');
 
-  const titel = document.getElementById('eventTitle').value.trim();
-  const beschreibung = document.getElementById('eventDescription').value.trim();
-  const kategorie = document.getElementById('eventCategory').value;
-  const adresse = document.getElementById('eventAddress').value.trim();
+  const coords = await getCoordinatesFromAddress(addr);
+  if (!coords) return alert('Adresse ungültig.');
 
-  if (!titel || !beschreibung || !adresse) {
-    alert('Bitte alle Felder ausfüllen!');
-    return;
-  }
+  const fname = Date.now() + '-' + file.name;
+  const { error: upErr } = await supabase.storage.from('flyer').upload(fname, file);
+  if (upErr) return alert('Upload fehlgeschlagen: '+upErr.message);
+  const { data: { publicUrl } } = supabase.storage.from('flyer').getPublicUrl(fname);
 
-  const coords = await getCoordinatesFromAddress(adresse);
-  if (!coords) {
-    alert('Adresse konnte nicht gefunden werden.');
-    return;
-  }
+  const ort = addr.split(',').pop().trim();
+  const { error } = await supabase.from('events').insert({
+    titel: t, beschreibung: b, kategorie: c, adresse: addr, ort, lat: coords.lat, lng: coords.lng,
+    flyer_url: publicUrl, user_id: user.id
+  });
+  if (error) return alert('Speichern fehlgeschlagen: '+error.message);
 
-  // Für Ort nehmen wir aus Adresse den Ortsnamen (z.B. letzter Teil nach Komma)
-  let ort = adresse;
-  if (adresse.includes(',')) {
-    ort = adresse.split(',').pop().trim();
-  }
-
-  const { data, error } = await supabase.from('events').insert([
-    {
-      titel,
-      beschreibung,
-      kategorie,
-      adresse,
-      ort,
-      lat: coords.lat,
-      lng: coords.lng,
-      user_id: user.id,
-    },
-  ]);
-
-  if (error) {
-    alert('Fehler beim Speichern: ' + error.message);
-    return;
-  }
-
-  alert('Veranstaltung hinzugefügt!');
+  alert('Fest erfolgreich gespeichert!');
   closeAddEventModal();
-  clearEventForm();
-  await loadEvents();
-}
-
-// Formularfelder zurücksetzen
-function clearEventForm() {
   document.getElementById('eventTitle').value = '';
   document.getElementById('eventDescription').value = '';
   document.getElementById('eventCategory').value = 'Konzert';
   document.getElementById('eventAddress').value = '';
-}
-
-// Wenn „Veranstaltung hinzufügen“ geklickt wird
-async function handleAddEventClick() {
-  const user = await checkUser();
-  if (!user) {
-    openLoginModal();
-  } else {
-    openAddEventModal();
-  }
-}
-
-function scrollToEvents() {
-  document.querySelector('.sidebar').scrollIntoView({ behavior: 'smooth' });
+  document.getElementById('eventImage').value = '';
+  await loadEvents();
 }
