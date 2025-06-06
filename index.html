@@ -1,74 +1,53 @@
-<title>WoWasLos</title>Add commentMore actions
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>WoWasLos</title>
   <link rel="stylesheet" href="style.css" />
   <link rel="icon" type="image/png" href="logo.jpg" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <script defer src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <script defer src="script.js"></script>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 </head>
 <body>
   <header>
-@@ -26,18 +26,18 @@ <h1>WoWasLos</h1>
+    <img src="logo.jpg" alt="Logo" id="logo" />
+    <h1>WoWasLos</h1>
+    <nav>
+      <button onclick="scrollToEvents()">Veranstaltung finden</button>
+      <button onclick="handleAddEventClick()">Veranstaltung hinzufügen</button>
+    </nav>
+  </header>
+
+  <main>
+    <section class="sidebar">
       <h2>Veranstaltungen</h2>
       <label for="locationFilter">Ort:</label>
-      <input type="text" id="locationFilter" placeholder="z. B. Freiburg" oninput="filterEvents()" />
+      <input type="text" id="locationFilter" placeholder="z. B. Freiburg" />
       
-
       <label for="categoryFilter">Kategorie:</label>
-      <select id="categoryFilter" onchange="filterEvents()">
+      <select id="categoryFilter">
         <option value="">Alle</option>
-        <option value="Alle">Alle</option>
         <option value="Konzert">Konzert</option>
         <option value="Festival">Festival</option>
         <option value="Markt">Markt</option>
       </select>
 
-      <label for="radiusFilter">Umkreis (km):</label>
-      <input type="number" id="radiusFilter" placeholder="z. B. 10" oninput="filterEvents()" />
-      
+      <label for="distanceFilter">Umkreis (km):</label>
+      <input type="number" id="distanceFilter" min="0" placeholder="z. B. 10" />
+
+      <button onclick="filterEvents()">Filtern</button>
 
       <ul id="eventList"></ul>
     </section>
 
-@@ -46,18 +46,33 @@ <h2>Veranstaltungen</h2>
+    <section class="map-container">
+      <div id="map"></div>
     </section>
   </main>
 
   <!-- Auth Modal -->
   <div id="authModal" class="modal hidden">
-  <!-- Login Modal -->
-  <div id="loginModal" class="modal hidden">
-    <div class="modal-content">
-      <span class="close" onclick="closeAuthModal()">&times;</span>
-      <h2>Login oder Registrieren</h2>
-      <input type="email" id="authEmail" placeholder="E-Mail" />
-      <input type="password" id="authPassword" placeholder="Passwort" />
-      <span class="close" onclick="closeLoginModal()">&times;</span>
-      <h2>Login</h2>
-      <input type="email" id="loginEmail" placeholder="E-Mail" />
-      <input type="password" id="loginPassword" placeholder="Passwort" />
-      <button onclick="login()">Login</button>
-      <button onclick="signup()">Registrieren</button>
-    </div>
-  </div>
-
-  <!-- Add Event Modal -->
-  <div id="addEventModal" class="modal hidden">
-
-    <div class="modal-content">
-      <span class="close" onclick="closeAddEventModal()">&times;</span>
-      <h2>Veranstaltung hinzufügen</h2>
-      <input type="text" id="eventTitle" placeholder="Titel" />
-      <input type="text" id="eventDescription" placeholder="Beschreibung" />
-      <select id="eventCategory">
-        <option value="Konzert">Konzert</option>
-        <option value="Festival">Festival</option>
-        <option value="Markt">Markt</option>
-      </select>
-      <input type="text" id="eventAddress" placeholder="Adresse (z. B. Musterstraße 1, Freiburg)" />
-      <button onclick="submitEvent()">Hinzufügen</button>
-    </div>
-  </div>
-</body>
-</html>
+    <div class="modal-conte
