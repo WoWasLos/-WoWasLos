@@ -4,95 +4,96 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>WoWasLos</title>
-
-  <!-- Supabase JS CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <!-- Leaflet CSS & JS -->
+  <link rel="icon" type="image/png" href="logo.jpg" />
   <link
     rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    crossorigin=""
+    href="https://unpkg.com/leaflet/dist/leaflet.css" 
   />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-  <!-- Dein CSS (das, das du geschickt hast) -->
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="style.css" />
+  <script defer src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script defer src="script.js"></script>
 </head>
 <body>
   <header>
-    <img src="logo.png" alt="Logo" id="logo" />
+    <img src="logo.jpg" alt="Logo" id="logo" />
     <h1>WoWasLos</h1>
     <nav>
-      <button id="loginBtn">Login</button>
-      <button id="showAddEventBtn" disabled>Veranstaltung hinzufügen</button>
-      <button id="showEventsBtn">Veranstaltungen anzeigen</button>
+      <button onclick="scrollToEvents()">Veranstaltung finden</button>
+      <button onclick="handleAddEventClick()">Veranstaltung hinzufügen</button>
     </nav>
   </header>
 
   <main>
-    <div class="sidebar">
-      <h2>Filter</h2>
+    <section class="sidebar">
+      <h2>Veranstaltungen filtern</h2>
 
-      <label for="filterOrt">Ort:</label>
-      <input type="text" id="filterOrt" placeholder="Ort eingeben" />
+      <label for="locationFilter">Ort:</label><br />
+      <input
+        type="text"
+        id="locationFilter"
+        placeholder="z. B. Freiburg"
+        oninput="filterEvents()"
+      />
 
-      <label for="filterKategorie">Kategorie:</label>
-      <select id="filterKategorie" multiple>
-        <option value="Musik">Musik</option>
-        <option value="Sport">Sport</option>
-        <option value="Kultur">Kultur</option>
+      <label for="categoryFilter">Kategorie:</label><br />
+      <select id="categoryFilter" onchange="filterEvents()">
+        <option value="Alle">Alle</option>
+        <option value="Konzert">Konzert</option>
         <option value="Festival">Festival</option>
-        <!-- Weitere Kategorien hier -->
+        <option value="Markt">Markt</option>
       </select>
 
-      <button id="applyFilterBtn">Filter anwenden</button>
+      <label for="radiusFilter">Umkreis (km):</label><br />
+      <input
+        type="number"
+        id="radiusFilter"
+        placeholder="z. B. 10"
+        min="0"
+        oninput="filterEvents()"
+      />
+
+      <button onclick="filterEvents()">Filtern</button>
 
       <ul id="eventList"></ul>
-    </div>
+    </section>
 
-    <div class="map-container">
+    <section class="map-container">
       <div id="map"></div>
-    </div>
+    </section>
   </main>
 
   <!-- Login Modal -->
-  <div class="modal hidden" id="loginModal">
+  <div id="loginModal" class="modal hidden">
     <div class="modal-content">
-      <span class="close" id="closeLoginModal">&times;</span>
-      <h2>Login</h2>
-      <input type="email" id="emailInput" placeholder="E-Mail" />
-      <input type="password" id="passwordInput" placeholder="Passwort" />
-      <button id="loginSubmitBtn">Einloggen</button>
-      <p id="loginError" style="color:red;"></p>
+      <span class="close" onclick="closeLoginModal()">&times;</span>
+      <h2>Login oder Registrieren</h2>
+      <input type="email" id="authEmail" placeholder="E-Mail" />
+      <input type="password" id="authPassword" placeholder="Passwort" />
+      <button onclick="login()">Login</button>
+      <button onclick="signup()">Registrieren</button>
     </div>
   </div>
 
-  <!-- Veranstaltung hinzufügen Modal -->
-  <div class="modal hidden" id="addEventModal">
-    <div class="modal-content">
-      <span class="close" id="closeAddEventModal">&times;</span>
+  <!-- Add Event Modal -->
+  <div id="addEventModal" class="modal hidden">
+    <div class="modal-content wide-modal">
+      <span class="close" onclick="closeAddEventModal()">&times;</span>
       <h2>Veranstaltung hinzufügen</h2>
-
-      <label for="eventNameInput">Name:</label>
-      <input type="text" id="eventNameInput" />
-
-      <label for="eventOrtInput">Ort:</label>
-      <input type="text" id="eventOrtInput" />
-
-      <label for="eventKategorieInput">Kategorie:</label>
-      <select id="eventKategorieInput">
-        <option value="Musik">Musik</option>
-        <option value="Sport">Sport</option>
-        <option value="Kultur">Kultur</option>
+      <input type="text" id="eventTitle" placeholder="Titel" />
+      <input type="text" id="eventDescription" placeholder="Beschreibung" />
+      <select id="eventCategory">
+        <option value="Konzert">Konzert</option>
         <option value="Festival">Festival</option>
+        <option value="Markt">Markt</option>
       </select>
-
-      <button id="addEventSubmitBtn">Hinzufügen</button>
-      <p id="addEventError" style="color:red;"></p>
+      <input
+        type="text"
+        id="eventAddress"
+        placeholder="Adresse (z. B. Musterstraße 1, Freiburg)"
+      />
+      <button onclick="submitEvent()">Hinzufügen</button>
     </div>
   </div>
-
-  <script src="app.js"></script>
 </body>
 </html>
