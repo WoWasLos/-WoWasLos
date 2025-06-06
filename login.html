@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>Login - WoWasLos</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>Login</h1>
+  <form id="login-form">
+    <label for="username">Benutzername:</label><br />
+    <input type="text" id="username" name="username" required /><br /><br />
+
+    <label for="password">Passwort:</label><br />
+    <input type="password" id="password" name="password" required /><br /><br />
+
+    <button type="submit">Einloggen</button>
+  </form>
+
+  <script>
+    document.getElementById('login-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const user = document.getElementById('username').value;
+      const pass = document.getElementById('password').value;
+
+      // Simpler Check: Benutzername = admin, Passwort = 1234
+      if (user === 'admin' && pass === '1234') {
+        window.location.href = 'add_event.html';
+      } else {
+        alert('Falscher Benutzername oder Passwort');
+      }
+    });
+  </script>
+</body>
+</html>
