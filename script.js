@@ -277,3 +277,4 @@ async function handleAddEventClick() {
 function scrollToEvents() {
   document.querySelector('.sidebar').scrollIntoView({ behavior: 'smooth' });
 }
+ 
