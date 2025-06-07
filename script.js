@@ -140,25 +140,29 @@ async function signup() {
 async function submitEvent() {
   const user = await checkUser();
   if (!user) return alert('Bitte erst einloggen.');
+
   const t = document.getElementById('eventTitle').value.trim();
   const b = document.getElementById('eventDescription').value.trim();
   const c = document.getElementById('eventCategory').value;
   const addr = document.getElementById('eventAddress').value.trim();
   const file = document.getElementById('eventImage').files[0];
-  if (!t||!b||!addr||!file) return alert('Bitte alle Felder ausfüllen und ein Bild hochladen.');
+  const time = document.getElementById('eventTime').value;
+  const price = document.getElementById('eventPrice').value.trim();
+  const link = document.getElementById('eventLink').value.trim();
+
+  if (!t || !b || !addr || !file) return alert('Bitte alle Felder ausfüllen und ein Bild hochladen.');
 
   const coords = await getCoordinatesFromAddress(addr);
   if (!coords) return alert('Adresse konnte nicht gefunden werden.');
 
-  // Datei hochladen
   const fileExt = file.name.split('.').pop();
   const fileName = `${Date.now()}.${fileExt}`;
   const { data: uploadData, error: uploadError } = await supabase.storage
-    .from('event-flyers')
+    .from('event-assets/flyer')
     .upload(fileName, file);
   if (uploadError) return alert('Bildupload fehlgeschlagen: ' + uploadError.message);
 
-  const flyer_url = supabase.storage.from('event-flyers').getPublicUrl(fileName).data.publicUrl;
+  const flyer_url = supabase.storage.from('event-assets/flyer').getPublicUrl(fileName).data.publicUrl;
 
   const { error } = await supabase.from('events').insert([{
     titel: t,
@@ -168,7 +172,10 @@ async function submitEvent() {
     ort: addr,
     lat: coords.lat,
     lng: coords.lng,
-    flyer_url
+    flyer_url,
+    uhrzeit: time,
+    ticketpreis: price,
+    webseite: link
   }]);
   if (error) return alert('Fehler beim Speichern: '+error.message);
   alert('Veranstaltung wurde hinzugefügt!');
