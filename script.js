@@ -32,7 +32,7 @@ function displayEvents(events) {
 
   events.forEach(e => {
     const li = document.createElement('li');
-    li.textContent = `${e.titel} (${e.kategorie}) – ${e.ort}`;
+    li.innerHTML = `${e.titel} (${e.kategorie}) – ${e.ort} <button onclick='likeEvent("${e.id}")'>❤️</button>`;
     li.onclick = () => e.lat && e.lng && map.setView([e.lat,e.lng], 14);
     list.appendChild(li);
 
@@ -102,7 +102,66 @@ async function getCoordinatesFromAddress(adresse) {
 
 async function checkUser() {
   const { data: { user } } = await supabase.auth.getUser();
+  const addEventBtn = document.getElementById('addEventBtn');
+  const authBtn = document.getElementById('authBtn');
+
+  if (user) {
+    addEventBtn?.classList.remove('hidden');
+    authBtn.textContent = 'Abmelden';
+    authBtn.onclick = logout;
+  } else {
+    addEventBtn?.classList.add('hidden');
+    authBtn.textContent = 'Login / Registrieren';
+    authBtn.onclick = openLoginModal;
+  }
+
   return user;
+}
+
+async function logout() {
+  await supabase.auth.signOut();
+  alert('Du wurdest abgemeldet.');
+  checkUser();
+}
+
+async function likeEvent(eventId) {
+  const user = await checkUser();
+  if (!user) return alert('Bitte erst einloggen zum Liken.');
+
+  const { error } = await supabase.from('likes').insert({
+    user_id: user.id,
+    event_id: eventId
+  });
+  if (error) {
+    if (error.code === '23505') {
+      alert('Schon gelikt.');
+    } else {
+      alert('Fehler beim Liken: ' + error.message);
+    }
+  } else {
+    alert('Gelikt!');
+  }
+}
+
+async function showFavorites() {
+  const user = await checkUser();
+  if (!user) return alert('Einloggen erforderlich.');
+
+  const { data: likes, error } = await supabase
+    .from('likes')
+    .select('event_id')
+    .eq('user_id', user.id);
+
+  if (error) return alert('Fehler beim Abruf: ' + error.message);
+  const eventIds = likes.map(l => l.event_id);
+
+  const { data: events, error: eventErr } = await supabase
+    .from('events')
+    .select('*')
+    .in('id', eventIds);
+
+  if (eventErr) return alert('Fehler bei Events: ' + eventErr.message);
+  displayEvents(events);
 }
 
 function handleAddEventClick() {
@@ -125,6 +184,7 @@ async function login() {
   alert('Login OK! Du kannst nun eine Veranstaltung hinzufügen.');
   closeLoginModal();
   openAddEventModal();
+  checkUser();
 }
 
 async function signup() {
@@ -135,6 +195,7 @@ async function signup() {
   alert('Registrierung OK! Bitte E‑Mail verifizieren.');
   closeLoginModal();
   openAddEventModal();
+  checkUser();
 }
 
 async function submitEvent() {
@@ -150,7 +211,9 @@ async function submitEvent() {
   const price = document.getElementById('eventPrice').value.trim();
   const link = document.getElementById('eventLink').value.trim();
 
-  if (!t || !b || !addr || !file) return alert('Bitte alle Felder ausfüllen und ein Bild hochladen.');
+  if (!t || !b || !addr || !file) {
+    return alert('Bitte alle Felder ausfüllen und ein Bild hochladen.');
+  }
 
   const coords = await getCoordinatesFromAddress(addr);
   if (!coords) return alert('Adresse konnte nicht gefunden werden.');
@@ -158,11 +221,15 @@ async function submitEvent() {
   const fileExt = file.name.split('.').pop();
   const fileName = `${Date.now()}.${fileExt}`;
   const { data: uploadData, error: uploadError } = await supabase.storage
-    .from('event-assets/flyer')
+    .from('flyer')
     .upload(fileName, file);
-  if (uploadError) return alert('Bildupload fehlgeschlagen: ' + uploadError.message);
+  if (uploadError) {
+    return alert('Bildupload fehlgeschlagen: ' + uploadError.message);
+  }
 
-  const flyer_url = supabase.storage.from('event-assets/flyer').getPublicUrl(fileName).data.publicUrl;
+  const flyer_url = supabase.storage
+    .from('flyer')
+    .getPublicUrl(fileName).data.publicUrl;
 
   const { error } = await supabase.from('events').insert([{
     titel: t,
@@ -177,7 +244,11 @@ async function submitEvent() {
     ticketpreis: price,
     webseite: link
   }]);
-  if (error) return alert('Fehler beim Speichern: '+error.message);
+
+  if (error) {
+    return alert('Fehler beim Speichern: ' + error.message);
+  }
+
   alert('Veranstaltung wurde hinzugefügt!');
   closeAddEventModal();
   loadEvents();
