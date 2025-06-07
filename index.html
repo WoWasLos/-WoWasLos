@@ -16,14 +16,19 @@
     <h1>WoWasLos</h1>
     <nav>
       <button onclick="scrollToEvents()">Veranstaltungen finden</button>
-      <button onclick="handleAddEventClick()">Veranstaltung hinzufügen</button>
+      <button onclick="showFavorites()">Meine Favoriten</button>
+      <button id="addEventBtn" class="hidden" onclick="handleAddEventClick()">Veranstaltung hinzufügen</button>
+      <button id="authBtn">Login / Registrieren</button>
     </nav>
   </header>
+
   <main>
     <section class="sidebar" id="sidebar">
       <h2>Veranstaltungen filtern</h2>
+
       <label for="locationFilter">Ort:</label>
       <input type="text" id="locationFilter" placeholder="z. B. Freiburg" oninput="filterEvents()" />
+
       <label for="categoryFilter">Kategorie:</label>
       <select id="categoryFilter" onchange="filterEvents()">
         <option value="Alle">Alle</option>
@@ -34,11 +39,14 @@
         <option value="Musikfest">Musikfest</option>
         <option value="Sonstiges">Sonstiges</option>
       </select>
+
       <label for="radiusFilter">Umkreis (km):</label>
       <input type="number" id="radiusFilter" placeholder="z. B. 10" min="0" oninput="filterEvents()" />
+
       <button onclick="filterEvents()">Filtern</button>
       <ul id="eventList"></ul>
     </section>
+
     <section class="map-container">
       <div id="map"></div>
     </section>
@@ -97,6 +105,7 @@
     </div>
   </div>
 
+  <!-- Footer -->
   <footer style="background:#a1866f; color:white; text-align:center; padding:20px;">
     <p>Impressum: Max Mustermann &amp; Erika Musterfrau</p>
     <p>
