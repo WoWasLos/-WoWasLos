@@ -1,5 +1,7 @@
 body, html {
-  margin: 0; padding: 0; height: 100%;
+  margin: 0;
+  padding: 0;
+  height: 100%;
   font-family: Arial, sans-serif;
   background-color: #f5f0e6;
   color: #4b3b2b;
@@ -30,6 +32,10 @@ nav button {
 }
 nav button:hover {
   background-color: #856e42;
+}
+#authBtn {
+  font-size: 0.85em;
+  padding: 6px 10px;
 }
 
 main {
@@ -133,7 +139,7 @@ main {
   font-weight: 600;
 }
 
-/* Neu: fullscreen Modal Styles */
+/* Vollbild-Modal für Formulare */
 .fullscreen-modal {
   width: 100vw !important;
   height: 100vh !important;
@@ -152,6 +158,8 @@ main {
 .fullscreen-modal select {
   font-size: 1.2em;
   padding: 10px 12px;
+  width: 100%;
+  margin-top: 10px;
 }
 
 .fullscreen-modal textarea {
@@ -165,9 +173,17 @@ main {
   margin-top: 20px;
   width: 100%;
   border-radius: 6px;
+  background-color: #6b5531;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+.fullscreen-modal button:hover {
+  background-color: #856e42;
 }
 
-/* Close button größer und besser klickbar */
+/* Schließen-Button */
 .close {
   position: absolute;
   top: 20px;
