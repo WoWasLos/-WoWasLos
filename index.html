@@ -39,6 +39,8 @@
       </select>
       <label for="radiusFilter">Umkreis (km):</label>
       <input type="number" id="radiusFilter" placeholder="z. B. 10" min="0" oninput="filterEvents()" />
+      <label for="dateFilter">Datum:</label>
+      <input type="date" id="dateFilter" onchange="filterEvents()" />
       <button onclick="filterEvents()">Filtern</button>
       <ul id="eventList"></ul>
     </section>
@@ -79,6 +81,8 @@
       </select>
       <label for="eventAddress">Adresse:</label>
       <input type="text" id="eventAddress" />
+      <label for="eventDate">Datum:</label>
+      <input type="date" id="eventDate" />
       <label for="eventTime">Uhrzeit:</label>
       <input type="time" id="eventTime" />
       <label for="eventPrice">Ticketpreis:</label>
@@ -98,3 +102,4 @@
   </footer>
 </body>
 </html>
+
