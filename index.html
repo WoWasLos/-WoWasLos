@@ -3,158 +3,98 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Event Übersicht</title>
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet/dist/leaflet.css"
-  />
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 10px;
-      background-color: #f4f4f4;
-    }
-    #map {
-      height: 400px;
-      margin-bottom: 10px;
-      border-radius: 8px;
-      border: 1px solid #888;
-    }
-    #eventList {
-      list-style: none;
-      padding: 0;
-      max-height: 300px;
-      overflow-y: auto;
-      background: white;
-      border-radius: 8px;
-      border: 1px solid #888;
-    }
-    #eventList li {
-      padding: 10px;
-      border-bottom: 1px solid #ddd;
-      cursor: pointer;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    #eventList li:hover {
-      background-color: #f0e7cf;
-    }
-    .li-content {
-      flex-grow: 1;
-    }
-    button.like-btn {
-      background: none;
-      border: none;
-      font-size: 18px;
-      cursor: pointer;
-      color: #a45d18;
-      transition: color 0.3s ease;
-    }
-    button.like-btn:hover {
-      color: #6b5531;
-    }
-    #controls {
-      margin-bottom: 10px;
-    }
-    select, input {
-      margin-right: 8px;
-      padding: 5px;
-      border-radius: 4px;
-      border: 1px solid #999;
-    }
-    button {
-      cursor: pointer;
-      padding: 5px 10px;
-      border-radius: 4px;
-      border: none;
-      background-color: #6b5531;
-      color: white;
-      font-weight: bold;
-    }
-    button:hover {
-      background-color: #a45d18;
-    }
-    .hidden {
-      display: none;
-    }
-    /* Modal Styles */
-    #loginModal {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 0 10px #333;
-      padding: 20px;
-      display: none;
-      z-index: 1000;
-    }
-    #loginModal input {
-      display: block;
-      margin-bottom: 10px;
-      width: 100%;
-      padding: 5px;
-      border-radius: 4px;
-      border: 1px solid #999;
-    }
-    #loginModal button {
-      width: 100%;
-      margin-bottom: 5px;
-    }
-    #loginModalClose {
-      position: absolute;
-      top: 5px;
-      right: 10px;
-      cursor: pointer;
-      font-size: 18px;
-      font-weight: bold;
-      color: #666;
-    }
-  </style>
+  <title>WoWasLos</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script defer src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script defer src="script.js"></script>
 </head>
 <body>
+  <header>
+    <img src="logo.jpg" alt="Logo" id="logo"/>
+    <h1>WoWasLos</h1>
+    <nav>
+      <button onclick="scrollToEvents()">Veranstaltungen finden</button>
+      <button onclick="showFavorites()">Meine Favoriten</button>
+      <button id="addEventBtn" class="hidden" onclick="handleAddEventClick()">Veranstaltung hinzufügen</button>
+      <button id="authBtn">Login / Registrieren</button>
+    </nav>
+  </header>
 
-  <div id="controls">
-    <select id="categoryFilter" onchange="filterEvents()">
-      <option>Alle</option>
-      <option>Sport</option>
-      <option>Kunst & Kultur</option>
-      <option>Politik</option>
-      <option>Musik</option>
-      <option>Familie</option>
-      <option>Freizeit</option>
-      <option>Sonstiges</option>
-    </select>
-
-    <input type="text" id="locationFilter" placeholder="Ort" oninput="filterEvents()" />
-
-    <input type="number" id="radiusFilter" placeholder="Radius in km" oninput="filterEvents()" min="0" step="0.1" />
-
-    <button id="findEventsBtn">Suchen</button>
-    <button id="showFavBtn" onclick="showFavorites()">Favoriten</button>
-    <button id="addEventBtn" class="hidden">Event hinzufügen</button>
-    <button id="authBtn">Login / Registrieren</button>
-  </div>
-
-  <div id="map"></div>
-
-  <ul id="eventList"></ul>
+  <main>
+    <section class="sidebar" id="sidebar">
+      <h2>Veranstaltungen filtern</h2>
+      <label for="locationFilter">Ort:</label>
+      <input type="text" id="locationFilter" placeholder="z. B. Freiburg" oninput="filterEvents()" />
+      <label for="categoryFilter">Kategorie:</label>
+      <select id="categoryFilter" onchange="filterEvents()">
+        <option value="Alle">Alle</option>
+        <option value="Konzert">Konzert</option>
+        <option value="Frühschoppen">Frühschoppen</option>
+        <option value="Stadtfest">Stadtfest</option>
+        <option value="Sportfest">Sportfest</option>
+        <option value="Musikfest">Musikfest</option>
+        <option value="Sonstiges">Sonstiges</option>
+      </select>
+      <label for="radiusFilter">Umkreis (km):</label>
+      <input type="number" id="radiusFilter" placeholder="z. B. 10" min="0" oninput="filterEvents()" />
+      <button onclick="filterEvents()">Filtern</button>
+      <ul id="eventList"></ul>
+    </section>
+    <section class="map-container">
+      <div id="map"></div>
+    </section>
+  </main>
 
   <!-- Login Modal -->
-  <div id="loginModal">
-    <span id="loginModalClose" onclick="closeLoginModal()">×</span>
-    <h3>Login / Registrierung</h3>
-    <input type="email" id="authEmail" placeholder="E-Mail" />
-    <input type="password" id="authPassword" placeholder="Passwort" />
-    <button onclick="login()">Login</button>
-    <button onclick="signup()">Registrieren</button>
+  <div id="loginModal" class="modal hidden">
+    <div class="modal-content fullscreen-modal">
+      <span class="close" onclick="closeLoginModal()">&times;</span>
+      <h2>Login / Registrieren</h2>
+      <input type="email" id="authEmail" placeholder="E‑Mail" />
+      <input type="password" id="authPassword" placeholder="Passwort" />
+      <button onclick="login()">Login</button>
+      <button onclick="signup()">Registrieren</button>
+    </div>
   </div>
 
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
-  <script src="script.js"></script>
+  <!-- Add Event Modal -->
+  <div id="addEventModal" class="modal hidden">
+    <div class="modal-content fullscreen-modal">
+      <span class="close" onclick="closeAddEventModal()">&times;</span>
+      <h2>Neue Veranstaltung hinzufügen</h2>
+      <label for="eventTitle">Titel:</label>
+      <input type="text" id="eventTitle" />
+      <label for="eventDescription">Beschreibung:</label>
+      <textarea id="eventDescription"></textarea>
+      <label for="eventCategory">Kategorie:</label>
+      <select id="eventCategory">
+        <option value="Konzert">Konzert</option>
+        <option value="Frühschoppen">Frühschoppen</option>
+        <option value="Stadtfest">Stadtfest</option>
+        <option value="Sportfest">Sportfest</option>
+        <option value="Musikfest">Musikfest</option>
+        <option value="Sonstiges">Sonstiges</option>
+      </select>
+      <label for="eventAddress">Adresse:</label>
+      <input type="text" id="eventAddress" />
+      <label for="eventTime">Uhrzeit:</label>
+      <input type="time" id="eventTime" />
+      <label for="eventPrice">Ticketpreis:</label>
+      <input type="text" id="eventPrice" placeholder="z. B. 10€" />
+      <label for="eventLink">Webseite:</label>
+      <input type="url" id="eventLink" placeholder="https://..." />
+      <label for="eventImage">Bild hochladen:</label>
+      <input type="file" id="eventImage" accept="image/*" />
+      <button onclick="submitEvent()">Hinzufügen</button>
+    </div>
+  </div>
 
+  <footer style="background:#a1866f; color:white; text-align:center; padding:20px;">
+    <p><strong>Impressum:</strong> Lara Wegenast | Luca Holzapfel | Marco Podewils</p>
+    <p><a href="https://www.instagram.com/wowaslos/" target="_blank" style="color:white;text-decoration:underline;">
+      Folge uns auf Instagram</a></p>
+  </footer>
 </body>
 </html>
