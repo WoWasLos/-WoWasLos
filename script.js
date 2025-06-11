@@ -9,7 +9,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadEvents();
   await checkUser();
 
-  document.getElementById('findEventsBtn')?.addEventListener('click', () => loadEvents());
+  // Event-Listener für den Button "Veranstaltung finden"
+  document.getElementById('findEventsBtn').addEventListener('click', () => {
+    loadEvents();
+  });
 });
 
 function initMap() {
@@ -154,7 +157,6 @@ async function login() {
   alert('Login erfolgreich!');
   closeLoginModal();
   await checkUser();
-  await loadEvents();
 }
 
 async function signup() {
@@ -171,7 +173,6 @@ async function logout() {
   await supabase.auth.signOut();
   alert('Du wurdest abgemeldet.');
   await checkUser();
-  await loadEvents();
 }
 
 async function likeEvent(eventId) {
@@ -211,15 +212,62 @@ async function showFavorites() {
     .select('*')
     .in('id', eventIds);
 
-  if (eventsErr) return alert('Fehler beim Abruf der Events: ' + eventsErr.message);
-
+  if (eventsErr) return alert('Fehler beim Laden: ' + eventsErr.message);
   displayEvents(events);
 }
 
-function openLoginModal() {
-  document.getElementById('loginModal').style.display = 'block';
+function handleAddEventClick() {
+  checkUser().then(user => user ? openAddEventModal() : openLoginModal());
 }
 
-function closeLoginModal() {
-  document.getElementById('loginModal').style.display = 'none';
+function openLoginModal() { document.getElementById('loginModal').classList.remove('hidden'); }
+function closeLoginModal() { document.getElementById('loginModal').classList.add('hidden'); }
+function openAddEventModal() { document.getElementById('addEventModal').classList.remove('hidden'); }
+function closeAddEventModal() { document.getElementById('addEventModal').classList.add('hidden'); }
+
+async function submitEvent() {
+  const user = await checkUser();
+  if (!user) return alert('Bitte einloggen.');
+
+  const t = document.getElementById('eventTitle').value.trim();
+  const b = document.getElementById('eventDescription').value.trim();
+  const c = document.getElementById('eventCategory').value;
+  const addr = document.getElementById('eventAddress').value.trim();
+  const time = document.getElementById('eventTime').value;
+  const price = document.getElementById('eventPrice').value.trim();
+  const link = document.getElementById('eventLink').value.trim();
+  const file = document.getElementById('eventImage').files[0];
+
+  if (!t || !b || !addr || !time) return alert('Bitte Pflichtfelder ausfüllen.');
+
+  const coords = await getCoordinatesFromAddress(addr);
+  if (!coords) return alert('Adresse nicht gefunden.');
+
+  let flyer_url = null;
+  if (file) {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}.${fileExt}`;
+    const { error: uploadError } = await supabase.storage.from('flyer').upload(fileName, file);
+    if (uploadError) return alert('Upload-Fehler: ' + uploadError.message);
+    const { data: { publicUrl } } = supabase.storage.from('flyer').getPublicUrl(fileName);
+    flyer_url = publicUrl;
+  }
+
+  const { error } = await supabase.from('events').insert([
+    {
+      titel: t, beschreibung: b, kategorie: c,
+      adresse: addr, ort: addr,
+      uhrzeit: time, ticketpreis: price, webseite: link,
+      lat: coords.lat, lng: coords.lng, flyer_url
+    }
+  ]);
+  if (error) return alert('Fehler beim Speichern: ' + error.message);
+
+  alert('Veranstaltung hinzugefügt!');
+  closeAddEventModal();
+  await loadEvents(); // zeigt wieder alle Veranstaltungen
+}
+
+function scrollToEvents() {
+  document.getElementById('sidebar').scrollIntoView({ behavior: 'smooth' });
 }
