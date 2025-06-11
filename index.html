@@ -25,10 +25,8 @@
   <main>
     <section class="sidebar" id="sidebar">
       <h2>Veranstaltungen filtern</h2>
-
       <label for="locationFilter">Ort:</label>
       <input type="text" id="locationFilter" placeholder="z. B. Freiburg" oninput="filterEvents()" />
-
       <label for="categoryFilter">Kategorie:</label>
       <select id="categoryFilter" onchange="filterEvents()">
         <option value="Alle">Alle</option>
@@ -39,14 +37,11 @@
         <option value="Musikfest">Musikfest</option>
         <option value="Sonstiges">Sonstiges</option>
       </select>
-
       <label for="radiusFilter">Umkreis (km):</label>
       <input type="number" id="radiusFilter" placeholder="z. B. 10" min="0" oninput="filterEvents()" />
-
       <button onclick="filterEvents()">Filtern</button>
       <ul id="eventList"></ul>
     </section>
-
     <section class="map-container">
       <div id="map"></div>
     </section>
@@ -69,13 +64,10 @@
     <div class="modal-content fullscreen-modal">
       <span class="close" onclick="closeAddEventModal()">&times;</span>
       <h2>Neue Veranstaltung hinzufügen</h2>
-
       <label for="eventTitle">Titel:</label>
       <input type="text" id="eventTitle" />
-
       <label for="eventDescription">Beschreibung:</label>
       <textarea id="eventDescription"></textarea>
-
       <label for="eventCategory">Kategorie:</label>
       <select id="eventCategory">
         <option value="Konzert">Konzert</option>
@@ -85,37 +77,24 @@
         <option value="Musikfest">Musikfest</option>
         <option value="Sonstiges">Sonstiges</option>
       </select>
-
       <label for="eventAddress">Adresse:</label>
       <input type="text" id="eventAddress" />
-
       <label for="eventTime">Uhrzeit:</label>
       <input type="time" id="eventTime" />
-
       <label for="eventPrice">Ticketpreis:</label>
       <input type="text" id="eventPrice" placeholder="z. B. 10€" />
-
       <label for="eventLink">Webseite:</label>
       <input type="url" id="eventLink" placeholder="https://..." />
-
       <label for="eventImage">Bild hochladen:</label>
       <input type="file" id="eventImage" accept="image/*" />
-
       <button onclick="submitEvent()">Hinzufügen</button>
     </div>
   </div>
 
-  <!-- Footer -->
   <footer style="background:#a1866f; color:white; text-align:center; padding:20px;">
-   
-<p>
-  <strong>Impressum:</strong> Lara Wegenast | Luca Holzapfel | Marco Podewils</p>
-    <p>
-      
-      <a href="https://www.instagram.com/wowaslos/" target="_blank" style="color:white;text-decoration:underline;">
-        Folge uns auf Instagram
-      </a>
-    </p>
+    <p><strong>Impressum:</strong> Lara Wegenast | Luca Holzapfel | Marco Podewils</p>
+    <p><a href="https://www.instagram.com/wowaslos/" target="_blank" style="color:white;text-decoration:underline;">
+      Folge uns auf Instagram</a></p>
   </footer>
 </body>
 </html>
