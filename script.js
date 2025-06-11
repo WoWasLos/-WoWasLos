@@ -129,11 +129,24 @@ function scrollToEvents() {
   document.getElementById('sidebar').scrollIntoView({ behavior: 'smooth' });
 }
 
-// Filterfunktion
+async function geocodeAddress(address) {
+  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`;
+  const response = await fetch(url);
+  const data = await response.json();
+  if (data.length === 0) {
+    alert("Adresse nicht gefunden.");
+    return null;
+  }
+  return {
+    lat: parseFloat(data[0].lat),
+    lng: parseFloat(data[0].lon)
+  };
+}
+
 async function filterEvents() {
   if (showingFavorites) return alert('Bitte zuerst Favoritenansicht verlassen.');
 
-  const locFilter = document.getElementById('locationFilter').value.toLowerCase();
+  const locFilter = document.getElementById('locationFilter').value.toLowerCase(); // Adresseingabe
   const catFilter = document.getElementById('categoryFilter').value;
   const radiusFilter = parseFloat(document.getElementById('radiusFilter').value);
   const dateFilter = document.getElementById('dateFilter').value;
@@ -145,6 +158,7 @@ async function filterEvents() {
   let filtered = allEvents;
 
   if (locFilter) {
+    // Optional: nach Ort filtern (Textvergleich), falls nötig
     filtered = filtered.filter(e => e.ort && e.ort.toLowerCase().includes(locFilter));
   }
 
@@ -157,19 +171,21 @@ async function filterEvents() {
   }
 
   if (!isNaN(radiusFilter) && radiusFilter > 0 && filtered.length > 0) {
-    // Radiusfilter mit Standortbestimmung
-    navigator.geolocation.getCurrentPosition(pos => {
-      const { latitude, longitude } = pos.coords;
-      filtered = filtered.filter(e => {
-        if (!e.lat || !e.lng) return false;
-        const dist = getDistanceFromLatLonInKm(latitude, longitude, e.lat, e.lng);
-        return dist <= radiusFilter;
-      });
+    // Statt Geolocation nun Geocoding der Adresse
+    const coords = await geocodeAddress(locFilter);
+    if (!coords) {
+      // Adresse konnte nicht gefunden werden, Events ohne Radiusfilter anzeigen
       displayEvents(filtered);
-    }, err => {
-      alert('Geolocation konnte nicht bestimmt werden.');
-      displayEvents(filtered);
+      return;
+    }
+
+    filtered = filtered.filter(e => {
+      if (!e.lat || !e.lng) return false;
+      const dist = getDistanceFromLatLonInKm(coords.lat, coords.lng, e.lat, e.lng);
+      return dist <= radiusFilter;
     });
+
+    displayEvents(filtered);
   } else {
     displayEvents(filtered);
   }
