@@ -1,7 +1,6 @@
 const supabaseUrl = 'https://bddofzmczzoiyausrdzb.supabase.co';
-const supabaseKey = 'YOUR_SUPABASE_KEY'; // bitte ersetzen
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJkZG9mem1jenpvaXlhdXNyZHpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwMDQwMTIsImV4cCI6MjA2MzU4MDAxMn0.-MISfzyKIP3zUbJl5vOZDlUAGQXBqntbc9r_sG2zsJI';
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-
 let map, markers = [], radiusCircle;
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -22,14 +21,6 @@ async function loadEvents() {
   const { data, error } = await supabase.from('events').select('*');
   if (error) return console.error(error);
   displayEvents(data);
-}
-
-function showAllEvents() {
-  loadEvents();
-  document.getElementById('locationFilter').value = '';
-  document.getElementById('radiusFilter').value = '';
-  document.getElementById('categoryFilter').value = 'Alle';
-  scrollToEvents();
 }
 
 function displayEvents(events) {
@@ -69,13 +60,164 @@ function displayEvents(events) {
         ${e.flyer_url ? `<img src="${e.flyer_url}" style="width:100px;">` : ''}
         <br><button onclick="likeEvent('${e.id}')">❤️ Like</button>
       `;
-      const m = L.marker([e.lat, e.lng]).addTo(map).bindPopup(popupContent);
+      const m = L.marker([e.lat, e.lng])
+        .addTo(map)
+        .bindPopup(popupContent);
       markers.push(m);
     }
   });
 }
 
-// ... (Rest wie zuvor: filterEvents, getDistance, getCoordinatesFromAddress)
+async function filterEvents() {
+  const cat = document.getElementById('categoryFilter').value;
+  const loc = document.getElementById('locationFilter').value.trim();
+  const radius = parseFloat(document.getElementById('radiusFilter').value);
+
+  const { data: events, error } = await supabase.from('events').select('*');
+  if (error) return console.error(error);
+  let filtered = events;
+
+  if (cat !== 'Alle')
+    filtered = filtered.filter(e => e.kategorie === cat);
+
+  if (loc)
+    filtered = filtered.filter(e => e.ort.toLowerCase().includes(loc.toLowerCase()));
+
+  if (loc && radius > 0) {
+    const coords = await getCoordinatesFromAddress(loc);
+    if (coords) {
+      if (radiusCircle) map.removeLayer(radiusCircle);
+      radiusCircle = L.circle([coords.lat, coords.lng], {
+        radius: radius * 1000,
+        color: '#6b5531',
+        fillColor: '#6b5531',
+        fillOpacity: 0.1
+      }).addTo(map);
+
+      filtered = filtered.filter(e =>
+        e.lat && e.lng && getDistance(coords.lat, coords.lng, e.lat, e.lng) <= radius
+      );
+
+      map.setView([coords.lat, coords.lng], 12);
+    }
+  } else if (radiusCircle) {
+    map.removeLayer(radiusCircle);
+  }
+
+  displayEvents(filtered);
+}
+
+function getDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI/180;
+  const dLon = (lon2 - lon1) * Math.PI/180;
+  const a = Math.sin(dLat/2)**2 +
+            Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) *
+            Math.sin(dLon/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+async function getCoordinatesFromAddress(adresse) {
+  try {
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(adresse)}`);
+    const d = await res.json();
+    return d[0] ? { lat: parseFloat(d[0].lat), lng: parseFloat(d[0].lon) } : null;
+  } catch (e) { console.error(e); return null; }
+}
+
+async function checkUser() {
+  const { data: { user } } = await supabase.auth.getUser();
+  const addEventBtn = document.getElementById('addEventBtn');
+  const authBtn = document.getElementById('authBtn');
+
+  if (user) {
+    addEventBtn.classList.remove('hidden');
+    authBtn.textContent = 'Abmelden';
+    authBtn.onclick = logout;
+  } else {
+    addEventBtn.classList.add('hidden');
+    authBtn.textContent = 'Login / Registrieren';
+    authBtn.onclick = openLoginModal;
+  }
+
+  return user;
+}
+
+async function login() {
+  const email = document.getElementById('authEmail').value;
+  const pw = document.getElementById('authPassword').value;
+  const { data: { user }, error } = await supabase.auth.signInWithPassword({ email, password: pw });
+  if (error) return alert('Login fehlgeschlagen: ' + error.message);
+  alert('Login erfolgreich!');
+  closeLoginModal();
+  await checkUser();
+}
+
+async function signup() {
+  const email = document.getElementById('authEmail').value;
+  const pw = document.getElementById('authPassword').value;
+  const { data: { user }, error } = await supabase.auth.signUp({ email, password: pw });
+  if (error) return alert('Registrierung fehlgeschlagen: ' + error.message);
+  alert('Registrierung erfolgreich! Bitte E‑Mail verifizieren.');
+  closeLoginModal();
+  await checkUser();
+}
+
+async function logout() {
+  await supabase.auth.signOut();
+  alert('Du wurdest abgemeldet.');
+  await checkUser();
+}
+
+async function likeEvent(eventId) {
+  const user = await checkUser();
+  if (!user) return alert('Bitte einloggen, um zu liken.');
+
+  const { data: existing, error: selErr } = await supabase
+    .from('likes')
+    .select('*')
+    .eq('user_id', user.id)
+    .eq('event_id', eventId);
+
+  if (selErr) return alert('Fehler beim Prüfen: ' + selErr.message);
+  if (existing.length > 0) return alert('Du hast dieses Event bereits geliked.');
+
+  const { error } = await supabase.from('likes').insert({ user_id: user.id, event_id: eventId });
+  if (error) return alert('Fehler beim Liken: ' + error.message);
+  alert('Event geliked!');
+}
+
+async function showFavorites() {
+  const user = await checkUser();
+  if (!user) return alert('Einloggen erforderlich.');
+
+  const { data: likes, error: likesErr } = await supabase
+    .from('likes')
+    .select('event_id')
+    .eq('user_id', user.id);
+
+  if (likesErr) return alert('Fehler beim Abruf: ' + likesErr.message);
+
+  const eventIds = likes.map(l => l.event_id);
+  if (eventIds.length === 0) return alert('Du hast noch keine Favoriten.');
+
+  const { data: events, error: eventsErr } = await supabase
+    .from('events')
+    .select('*')
+    .in('id', eventIds);
+
+  if (eventsErr) return alert('Fehler beim Laden: ' + eventsErr.message);
+  displayEvents(events);
+}
+
+function handleAddEventClick() {
+  checkUser().then(user => user ? openAddEventModal() : openLoginModal());
+}
+
+function openLoginModal() { document.getElementById('loginModal').classList.remove('hidden'); }
+function closeLoginModal() { document.getElementById('loginModal').classList.add('hidden'); }
+function openAddEventModal() { document.getElementById('addEventModal').classList.remove('hidden'); }
+function closeAddEventModal() { document.getElementById('addEventModal').classList.add('hidden'); }
 
 async function submitEvent() {
   const user = await checkUser();
@@ -90,31 +232,41 @@ async function submitEvent() {
   const link = document.getElementById('eventLink').value.trim();
   const file = document.getElementById('eventImage').files[0];
 
-  if (!t || !b || !addr || !time) return alert('Pflichtfelder fehlen.');
+  if (!t || !b || !addr || !time) return alert('Bitte Pflichtfelder ausfüllen.');
 
   const coords = await getCoordinatesFromAddress(addr);
   if (!coords) return alert('Adresse nicht gefunden.');
 
   let flyer_url = null;
   if (file) {
-    const ext = file.name.split('.').pop();
-    const fn = `${Date.now()}.${ext}`;
-    const { error: upErr } = await supabase.storage.from('flyer').upload(fn, file);
-    if (upErr) return alert('Upload fehlgeschlagen: ' + upErr.message);
-    const { data: { publicUrl } } = supabase.storage.from('flyer').getPublicUrl(fn);
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}.${fileExt}`;
+    const { error: uploadError } = await supabase.storage.from('flyer').upload(fileName, file);
+    if (uploadError) return alert('Upload-Fehler: ' + uploadError.message);
+    const { data: { publicUrl } } = supabase.storage.from('flyer').getPublicUrl(fileName);
     flyer_url = publicUrl;
   }
 
-  const { error } = await supabase.from('events').insert([{
-    titel: t, beschreibung: b, kategorie: c,
-    adresse: addr, ort: addr,
-    uhrzeit: time, ticketpreis: price, webseite: link,
-    lat: coords.lat, lng: coords.lng, flyer_url
-  }]);
-
+  const { error } = await supabase.from('events').insert([
+    {
+      titel: t, beschreibung: b, kategorie: c,
+      adresse: addr, ort: addr,
+      uhrzeit: time, ticketpreis: price, webseite: link,
+      lat: coords.lat, lng: coords.lng, flyer_url
+    }
+  ]);
   if (error) return alert('Fehler beim Speichern: ' + error.message);
 
-  alert('Event hinzugefügt!');
+  alert('Veranstaltung hinzugefügt!');
   closeAddEventModal();
-  showAllEvents(); // lädt alle Events, scrollt nach oben
+  await loadEvents(); // zeigt wieder alle Veranstaltungen
 }
+
+function scrollToEvents() {
+  document.getElementById('sidebar').scrollIntoView({ behavior: 'smooth' });
+}
+
+// ✅ NEU: Button „Veranstaltungen anzeigen“ zeigt ALLE Events
+document.getElementById('showAllBtn').addEventListener('click', () => {
+  loadEvents();
+});
