@@ -1,4 +1,4 @@
-const supabaseUrl = 'https://bddofzmczzoiyausrdzb.supabase.co';
+const supabaseUrl = 'https://bddofzmczzoiyausrdzb.supabase.co'; 
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJkZG9mem1jenpvaXlhdXNyZHpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwMDQwMTIsImV4cCI6MjA2MzU4MDAxMn0.-MISfzyKIP3zUbJl5vOZDlUAGQXBqntbc9r_sG2zsJI';
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
@@ -9,9 +9,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadEvents();
   await checkUser();
 
-  // Event-Listener für den Button "Veranstaltung finden"
   document.getElementById('findEventsBtn').addEventListener('click', () => {
-    loadEvents();
+    filterEvents();
   });
 });
 
@@ -86,9 +85,6 @@ async function filterEvents() {
   if (cat !== 'Alle')
     filtered = filtered.filter(e => e.kategorie === cat);
 
-  if (loc)
-    filtered = filtered.filter(e => e.ort.toLowerCase().includes(loc.toLowerCase()));
-
   if (loc && radius > 0) {
     const coords = await getCoordinatesFromAddress(loc);
     if (coords) {
@@ -105,6 +101,9 @@ async function filterEvents() {
       );
 
       map.setView([coords.lat, coords.lng], 12);
+    } else {
+      alert('Adresse nicht gefunden.');
+      return;
     }
   } else if (radiusCircle) {
     map.removeLayer(radiusCircle);
@@ -128,7 +127,10 @@ async function getCoordinatesFromAddress(adresse) {
     const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(adresse)}`);
     const d = await res.json();
     return d[0] ? { lat: parseFloat(d[0].lat), lng: parseFloat(d[0].lon) } : null;
-  } catch (e) { console.error(e); return null; }
+  } catch (e) {
+    console.error(e);
+    return null;
+  }
 }
 
 async function checkUser() {
@@ -265,7 +267,7 @@ async function submitEvent() {
 
   alert('Veranstaltung hinzugefügt!');
   closeAddEventModal();
-  await loadEvents(); // zeigt wieder alle Veranstaltungen
+  await loadEvents();
 }
 
 function scrollToEvents() {
